@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="asset">
+    <file>exclamation-circle.png</file>
+    <file>question-button.png</file>
+    <file>information-button.png</file>
+    <file>counter-reset.png</file>
+    <file>report-excel.png</file>
+    <file>equalizer--pencil.png</file>
+    <file>script-text.png</file>
+    <file>table.png</file>
+    <file>drive-upload.png</file>
+  </qresource>
+</RCC>

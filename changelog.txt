@@ -1,0 +1,6 @@
+0.8 Reset counters button added
+0.9 Acknowledgment added
+0.10 Fix bugs with Acknowledgment
+     Pause added
+0.11 Switch LED request to unconnected
+     Long-reads updated
