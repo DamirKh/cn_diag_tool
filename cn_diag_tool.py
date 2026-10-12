@@ -1115,6 +1115,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self,
             "About ControlNet Diagnostic Tool",
             f"<p>Version: {ver.strng}</p>"
+            f"<p>Commit: {ver.commit}</p>"
             f"<p>By using ControlNet Diagnostic Tool</p>"
             f"<p>you can significantly improve the troubleshooting speed of ControlNet networks.</p>"
             f"<p> - PyQt6</p>"
