@@ -755,21 +755,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self.load_site_config(site_conf_filename=filename)
             self.config_file_path = filename  # update path in-place for future 'save' calls
 
-    def _worker_not_connected(self):
-        self.lineEditConnectionPath.setEnabled(True)
-        self.pushButtonConnect.setEnabled(True)
-        self.pushButtonAddTab.setEnabled(False)
-        self.actionDrop_Counters.setEnabled(False)
-
-    def _worker_connected(self):
-        self.lineEditConnectionPath.setEnabled(False)
-        self.pushButtonConnect.setEnabled(False)
-        self.pushButtonAddTab.setEnabled(True)
-        self.actionDrop_Counters.setEnabled(True)
-
     def on_connection_lost(self, text_error: str):
         log.error(f"Lost connection {text_error}")
-        self._worker_not_connected()
         QMessageBox.warning(self, f"Connection to PLC lost", text_error)
         pass
 
