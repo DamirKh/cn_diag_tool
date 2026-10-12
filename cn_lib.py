@@ -9,6 +9,7 @@ def scan_cn(cip_path, format='', exclude_bp_sn='', p=print, current_cn_node_upda
             pass
 
     cn_modules_paths = {}
+    cn_modules_identity = {}
     found_controlnet_nodes = []
     p(f'Scanning ControlNet {cip_path}...')
     for cnet_node_num in range(max_node_num + 1):  # 100 for production
@@ -31,6 +32,7 @@ def scan_cn(cip_path, format='', exclude_bp_sn='', p=print, current_cn_node_upda
                 # p(m)
                 found_controlnet_nodes.append(cnet_node_num)
                 cn_modules_paths[m['serial']] = target
+                cn_modules_identity[cnet_node_num] = m
             driver.close()
         except ResponseError:
             # print('.', end='')
@@ -38,4 +40,4 @@ def scan_cn(cip_path, format='', exclude_bp_sn='', p=print, current_cn_node_upda
     cn_node_updt('--')
     # print('-'*20)
     # pprint(cn_modules_paths)
-    return found_controlnet_nodes, cn_modules_paths
+    return found_controlnet_nodes, cn_modules_paths, cn_modules_identity

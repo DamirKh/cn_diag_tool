@@ -8,3 +8,10 @@
      Site row order is restored correctly
 0.13 Scan CN button added
      Show/Pause buttons control reading
+0.14 Site stores module serial numbers
+     Serial column highlights changes (Acknowledge resets)
+0.15 Fix crash on re-scan (wait for worker threads)
+     Log unhandled errors instead of aborting
+0.16 Nodes found by scan, but absent in the loaded site, are appended
+0.17 Name and Rev columns added (saved in the site)
+1.0 First stable release

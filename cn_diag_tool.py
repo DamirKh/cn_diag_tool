@@ -65,6 +65,17 @@ LABELS = [
     HeaderData('Serial',
                comment='номер',
                hint='Серийный номер модуля',
+               woc=True,
+               ),
+    HeaderData('Name',
+               comment='Name',
+               hint='Имя/каталожный номер модуля',
+               woc=True,
+               ),
+    HeaderData('Rev',
+               comment='Rev',
+               hint='Ревизия (версия) модуля',
+               woc=True,
                ),
     HeaderData('reply_time',
                comment='Ответ',
@@ -297,6 +308,9 @@ ControlNet разработан для резервирования, то ест
                ),
 ]
 
+# sid -> logical column index (column order is fixed by LABELS; only visual order changes)
+COLUMN_INDEX = {label.sid: index for index, label in enumerate(LABELS)}
+
 
 class GeometrySaver(QWidget):
     def geometry_saver_init(self, settings_key: str):
@@ -344,11 +358,10 @@ class ConfigureDialog(QDialog, GeometrySaver):
         try:
             for col in range(self.tableWidget.columnCount()):
                 header_item = self.tableWidget.horizontalHeaderItem(col)
-                header_data:HeaderData = header_item.data(My_ROLE)
-                if header_item and header_item.text():
-                    column_name = header_item.text()
-                else:
+                if not header_item or not header_item.text():
                     continue  # do not configure the column without header or text in header
+                header_data:HeaderData = header_item.data(My_ROLE)
+                column_name = header_item.text()
 
                 row = self.configTable.rowCount()
                 self.configTable.insertRow(row)
@@ -566,6 +579,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.statusBar().addPermanentWidget(self.status_bar_label_1)
 
         self._workers = {}
+        self._retired_workers = []
         self._site_loaded = False
         self._paused = False
 
@@ -615,6 +629,11 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             for item in (self.tableWidget.verticalHeaderItem(row) for row in order)
             if item
         ]
+
+        # per-node identity values, keyed by the "[NN]" row label
+        config['serials'] = self._identity_column_values('Serial')
+        config['names'] = self._identity_column_values('Name')
+        config['revs'] = self._identity_column_values('Rev')
 
         try:
             with open(filename, 'w') as f:
@@ -707,40 +726,31 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             plc_path = plc_settings.get('path', "")
             self.lineEditConnectionPath.setText(plc_path)
 
+            self._stop_workers()
             self.tableWidget.clearContents()
             self.tableWidget.setRowCount(0)
 
-            for _node_num, worker in self._workers.items():
-                # assert worker is PLCConnectionWorker
-                worker.stop()
-            if len(self._workers):
-                progress = QProgressDialog("Please wait...", '', 0, 0, self)  # 0,0 for indeterminate progress
-                progress.setWindowModality(Qt.WindowModality.WindowModal)  # Make it blocking (optional)
-                progress.show()
-                QApplication.processEvents()  # Important to show the dialog before sleeping
-                t = QTimer()
-                t.setSingleShot(True)  # Run only once
-                # t.timeout.connect(self.finish_work)
-                t.start(2000)  # 2000 ms = 2 seconds
-                while t.isActive():
-                    QApplication.processEvents()
-                # Check if cancelled (if you made the dialog modal and added a cancel button)
-                if progress.wasCanceled():
-                    # Handle cancellation
-                    pass
-                self._workers = {}
-                progress.close()  # Close the dialog after completion
-
             self.pushButtonScan.setEnabled(True)
+            self._setup_columns()
 
-            # load rows in saved (visual) order
+            # load rows in saved (visual) order, restoring identity values when present
+            identity_maps = {
+                'Serial': config.get('serials', {}),
+                'Name': config.get('names', {}),
+                'Rev': config.get('revs', {}),
+            }
             for entry in self._parse_site_rows(config):
                 row = self.tableWidget.rowCount()
                 self.tableWidget.insertRow(row)
                 if entry == MEDIA_CONVERTER:
                     self.tableWidget.setVerticalHeaderItem(row, QTableWidgetItem(MEDIA_CONVERTER))
-                else:
-                    self.tableWidget.setVerticalHeaderItem(row, Header_Item_NodeNum(int(entry[1:-1])))
+                    continue
+                self.tableWidget.setVerticalHeaderItem(row, Header_Item_NodeNum(int(entry[1:-1])))
+                for sid, mapping in identity_maps.items():
+                    value = mapping.get(entry)
+                    if value:
+                        self.tableWidget.setItem(row, COLUMN_INDEX[sid], QTableWidgetItem(str(value)))
+            self.tableWidget.load_configuration()
             self._site_loaded = True
             self._site_changed = False
             self._paused = False
@@ -886,6 +896,45 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         else:
             self.led_blink_timer.setInterval(old_value)
 
+    def _setup_columns(self):
+        """Creates the diagnostic columns and their headers from LABELS."""
+        self.tableWidget.setColumnCount(len(LABELS))
+        for column, header_data in enumerate(LABELS):
+            column_header_item = QTableWidgetItem(header_data.comment)
+            column_header_item.setData(My_ROLE, header_data)
+            column_header_item.setToolTip(header_data.longread)
+            font = column_header_item.font()  # Get the current font
+            font.setPointSize(12)  # Set the desired point size (e.g., 12)
+            column_header_item.setFont(font)  # Set the modified font back
+            self.tableWidget.setHorizontalHeaderItem(column, column_header_item)
+
+    def _set_identity_value(self, row, sid, value):
+        """Sets an identity cell (Serial/Name/Rev), highlighting a changed value."""
+        if value in (None, ''):
+            return
+        text = str(value)
+        col = COLUMN_INDEX[sid]
+        item = self.tableWidget.item(row, col)
+        if item is None:
+            self.tableWidget.setItem(row, col, QTableWidgetItem(text))
+        else:
+            if item.text() != text:
+                item.setData(Qt.ItemDataRole.DecorationRole, YELLOW)
+            item.setText(text)
+
+    def _identity_column_values(self, sid):
+        """Collects non-empty values of an identity column, keyed by row label ("[NN]")."""
+        col = COLUMN_INDEX[sid]
+        values = {}
+        for row in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.verticalHeaderItem(row)
+            if not item or item.text() == MEDIA_CONVERTER:
+                continue
+            cell = self.tableWidget.item(row, col)
+            if cell and cell.text():
+                values[item.text()] = cell.text()
+        return values
+
     def _find_row_by_node(self, node_num: int):
         """Returns the table row for a node number, or None."""
         text = f'[{node_num:02}]'
@@ -902,25 +951,54 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonPause.setEnabled(has_workers)
         (self.pushButtonPause if self._paused else self.pushButtonShow).setChecked(True)
 
+    def _stop_workers(self, timeout_ms=10000):
+        """Stops all polling workers and waits for their threads to finish.
+
+        A running QThread must never be destroyed, so a worker that does not stop
+        within the timeout is kept referenced (and cleaned up on finish) instead.
+        """
+        workers = list(self._workers.values())
+        self._workers = {}
+        for worker in workers:
+            worker.stop()
+        for worker in workers:
+            if not worker.wait(timeout_ms):
+                log.warning(f'Worker [{worker.node_num:02}] did not stop within {timeout_ms} ms; deferring cleanup')
+                try:
+                    worker.signals.read_done.disconnect()
+                except (TypeError, RuntimeError):
+                    pass
+                self._retired_workers.append(worker)
+        self._retired_workers = [worker for worker in self._retired_workers if not worker.isFinished()]
+
     def onButtonScan(self):
         """Scans the ControlNet network for nodes and (re)starts polling workers."""
         _path = self.lineEditConnectionPath.text()
+        self._stop_workers()
         self.lineEditConnectionPath.setEnabled(False)
         self.pushButtonScan.setEnabled(False)
         self._app.instance().setOverrideCursor(QCursor(Qt.CursorShape.BusyCursor))
         try:
-            nodes, paths = scan_cn(_path, p=log.debug)
+            nodes, paths, identity = scan_cn(_path, p=log.debug)
         except (TimeoutError, CommError) as e:
             log.critical(f"Error Scanning ControlNet (no route to IP address?) {e}")
             QMessageBox.critical(self, "Error Scanning ControlNet",
                                  f"Error occurs while scanning ControlNet!\n(no route to IP address?)\n\n"
                                  f"{e}")
+            self._update_run_buttons()
             return
         except RequestError as e:
             log.critical(f"Error Scanning ControlNet (bad connection path?) {e}")
             QMessageBox.critical(self, "Error Scanning ControlNet",
                                  f"Error occurs while scanning ControlNet!\n(bad connection path?)\n\n"
                                  f"{e}")
+            self._update_run_buttons()
+            return
+        except Exception as e:
+            log.exception("Unexpected error while scanning ControlNet")
+            QMessageBox.critical(self, "Error Scanning ControlNet",
+                                 f"Error occurs while scanning ControlNet!\n\n{e}")
+            self._update_run_buttons()
             return
         finally:
             self._app.instance().restoreOverrideCursor()
@@ -928,20 +1006,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self.pushButtonScan.setEnabled(True)
         log.info(f'ControlNet [{_path}] scan complete')
 
-        for worker in self._workers.values():
-            worker.stop()
-        self._workers = {}
-
-        #columns
-        self.tableWidget.setColumnCount(len(LABELS))
-        for column, header_data in enumerate(LABELS):
-            column_header_item = QTableWidgetItem(header_data.comment)
-            column_header_item.setData(My_ROLE, header_data)
-            column_header_item.setToolTip(header_data.longread)
-            font = column_header_item.font()  # Get the current font
-            font.setPointSize(12)  # Set the desired point size (e.g., 12)
-            column_header_item.setFont(font)  # Set the modified font back
-            self.tableWidget.setHorizontalHeaderItem(column, column_header_item)
+        self._setup_columns()
 
         if not self._site_loaded:
             self.tableWidget.setRowCount(len(nodes))
@@ -952,12 +1017,20 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             if self._site_loaded:
                 target_row = self._find_row_by_node(node_num)
                 if target_row is None:
-                    log.warning(f'Node [{node_num:02}] found on network but absent in the loaded site; skipped')
-                    continue
+                    # node found on network but absent in the loaded site: append at the end
+                    target_row = self.tableWidget.rowCount()
+                    self.tableWidget.insertRow(target_row)
+                    self.tableWidget.setVerticalHeaderItem(target_row, Header_Item_NodeNum(node_num))
+                    self._site_changed = True
+                    log.info(f'Node [{node_num:02}] found on network but absent in the loaded site; appended')
             else:
                 target_row = row
                 self.tableWidget.setVerticalHeaderItem(target_row, Header_Item_NodeNum(node_num))
-            self.tableWidget.setItem(target_row, 0, QTableWidgetItem(str(cn_module_serial)))
+            # identity cells are "warning on change": highlight if they differ from the previous value
+            info = identity.get(node_num, {})
+            self._set_identity_value(target_row, 'Serial', cn_module_serial)
+            self._set_identity_value(target_row, 'Name', info.get('product_name'))
+            self._set_identity_value(target_row, 'Rev', info.get('rev'))
 
             cn_node_worker = PLCConnectionWorker(node_num)
             cn_node_worker.path = cn_path
@@ -997,8 +1070,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
         for col in range(self.tableWidget.columnCount()):
             horisontal_header_item = self.tableWidget.horizontalHeaderItem(col)
-            column_data: HeaderData = self.tableWidget.horizontalHeaderItem(col).data(My_ROLE)
-            if horisontal_header_item and column_data.sid in ('LED_A', 'LED_B'):
+            column_data: HeaderData = horisontal_header_item.data(My_ROLE) if horisontal_header_item else None
+            if column_data and column_data.sid in ('LED_A', 'LED_B'):
                 # found LED column
                 key = horisontal_header_item.text()
                 for row in range(self.tableWidget.rowCount()):
@@ -1066,8 +1139,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         """reset warnings"""
         for col in range(self.tableWidget.columnCount()):
             horisontal_header_item = self.tableWidget.horizontalHeaderItem(col)
-            column_data: HeaderData = self.tableWidget.horizontalHeaderItem(col).data(My_ROLE)
-            if horisontal_header_item and column_data.woc:
+            column_data: HeaderData = horisontal_header_item.data(My_ROLE) if horisontal_header_item else None
+            if column_data and column_data.woc:
                 for row in range(self.tableWidget.rowCount()):
                     vertical_header_item = self.tableWidget.verticalHeaderItem(row)
                     if vertical_header_item and vertical_header_item.text() == MEDIA_CONVERTER:
@@ -1098,8 +1171,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                         # We need to iterate through the header items.
                         for col in range(self.tableWidget.columnCount()):
                             header_item = self.tableWidget.horizontalHeaderItem(col)
-                            column_data: HeaderData = self.tableWidget.horizontalHeaderItem(col).data(My_ROLE)
-                            if header_item and column_data.sid == key:
+                            column_data: HeaderData = header_item.data(My_ROLE) if header_item else None
+                            if column_data and column_data.sid == key:
                                 break  # Found the column
                         else:  # Loop completed without finding the header
                             raise ValueError(f"Header '{key}' not found")
@@ -1130,12 +1203,11 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 "Are you sure to quit? Any unsaved changes will be lost.", QMessageBox.StandardButton.Yes |
                 QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
 
-            if reply == QMessageBox.StandardButton.Yes:
-                event.accept()
-            else:
+            if reply != QMessageBox.StandardButton.Yes:
                 event.ignore()
-        else:
-            event.accept()
+                return
+        self._stop_workers()
+        event.accept()
 
     def about(self):
         QMessageBox.about(
@@ -1160,6 +1232,12 @@ if __name__ == "__main__":
     log = logging.getLogger(__name__)
     log.setLevel(logging.DEBUG)
     log.info('Start application')
+
+    # PyQt6 aborts the process on an unhandled exception raised inside a slot;
+    # logging it instead keeps the application alive and surfaces the traceback.
+    def _log_unhandled_exception(exc_type, exc_value, exc_tb):
+        log.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_tb))
+    sys.excepthook = _log_unhandled_exception
 
     app_config_dir_path = user_data.get_user_data_path()
     sites_path = app_config_dir_path / 'sites'

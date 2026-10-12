@@ -43,9 +43,11 @@ polling loop. Most functionality is untestable without real ControlNet hardware/
 `%APPDATA%/CN_diag_tool` (Windows). Holds `config.json`, `main_table.json`, and `sites/*.json`.
 Qt `QSettings` uses org `CPC`, app `CN_Diagnostic_Tool` (window geometry).
 
-A site (a ControlNet network) is a JSON file: `{"CN": {"path": ...}, "rows": [...]}`, where `rows`
-is the exact top-to-bottom table order; a node is `"[NN]"`, a media converter is `"=/="`. The loader
-also accepts the legacy `"nodes"` mapping (entry -> visual index) as a fallback.
+A site (a ControlNet network) is a JSON file: `{"CN": {"path": ...}, "rows": [...], "serials": {...},
+"names": {...}, "revs": {...}}`, where `rows` is the exact top-to-bottom table order (a node is
+`"[NN]"`, a media converter is `"=/="`) and the optional `serials`/`names`/`revs` maps `"[NN]"` to
+that module's serial number, product name and revision. The loader also accepts the legacy `"nodes"`
+mapping (entry -> visual index) as a fallback.
 
 - `cn_diag_tool.spec` generates `_build_info.py` (gitignored) with the baked-in commit hash.
 - `changelog.txt` is read at runtime and shown in the About/Changelog dialog — update it when bumping features.
