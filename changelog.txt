@@ -4,3 +4,7 @@
      Pause added
 0.11 Switch LED request to unconnected
      Long-reads updated
+0.12 Reworked site storage format
+     Site row order is restored correctly
+0.13 Scan CN button added
+     Show/Pause buttons control reading

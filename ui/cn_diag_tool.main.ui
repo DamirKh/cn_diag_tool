@@ -34,12 +34,28 @@
        <widget class="QLineEdit" name="lineEditConnectionPath"/>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonConnect">
+       <widget class="QPushButton" name="pushButtonScan">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>Go!</string>
+         <string>Scan CN</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonShow">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Show</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

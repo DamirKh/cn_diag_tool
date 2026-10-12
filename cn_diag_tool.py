@@ -14,7 +14,7 @@ from PyQt6.QtGui import QCursor, QColor, QBrush, QFont
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtWidgets import QMainWindow, QApplication, QProgressDialog, QVBoxLayout, QMessageBox, QLabel, QDialog, \
     QWidget, QTableWidgetItem, QTableWidget, QGridLayout, QGroupBox, QCheckBox, QLineEdit, QDialogButtonBox, \
-    QHeaderView, QFileDialog
+    QHeaderView, QFileDialog, QButtonGroup
 
 import user_data
 import ver
@@ -567,6 +567,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
         self._workers = {}
         self._site_loaded = False
+        self._paused = False
 
         # Create a timer for periodic LED blinkers
         self.led_blink_timer = QTimer(self)
@@ -606,16 +607,14 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             'path': self.lineEditConnectionPath.text(),
         }
 
-        # nodes settings
-        nodes = {}
-        nodes[MEDIA_CONVERTER] = []
-        for row in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.verticalHeaderItem(row)
-            if item and item.text() !=  MEDIA_CONVERTER:
-                nodes[item.text()] = self.tableWidget.verticalHeader().visualIndex(row)
-            else:
-                nodes[MEDIA_CONVERTER].append(self.tableWidget.verticalHeader().visualIndex(row))
-        config['nodes'] = nodes
+        # rows in visual (top-to-bottom) order: node "[NN]" or media converter "=/="
+        header = self.tableWidget.verticalHeader()
+        order = sorted(range(self.tableWidget.rowCount()), key=header.visualIndex)
+        config['rows'] = [
+            item.text()
+            for item in (self.tableWidget.verticalHeaderItem(row) for row in order)
+            if item
+        ]
 
         try:
             with open(filename, 'w') as f:
@@ -679,6 +678,24 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             else:
                 pass
 
+    @staticmethod
+    def _parse_site_rows(config: dict) -> list:
+        """Returns ordered row entries ("[NN]" or MEDIA_CONVERTER) from a site config.
+
+        Supports the legacy "nodes" mapping (entry -> visual index) as a fallback.
+        """
+        rows = config.get('rows')
+        if rows is not None:
+            return rows
+        items = []
+        for key, value in config.get('nodes', {}).items():
+            if key == MEDIA_CONVERTER:
+                items.extend((visual, MEDIA_CONVERTER) for visual in value)
+            else:
+                items.append((value, key))
+        items.sort(key=lambda item: item[0])
+        return [entry for _, entry in items]
+
     def load_site_config(self, site_conf_filename):
         """Loads the application configuration from a JSON file."""
         try:
@@ -714,27 +731,20 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 self._workers = {}
                 progress.close()  # Close the dialog after completion
 
-            self.pushButtonConnect.setEnabled(True)
+            self.pushButtonScan.setEnabled(True)
 
-            # load nodes
-            visual_order = []
-            _media_convs = config['nodes'].pop(MEDIA_CONVERTER, [])
-            for node in config['nodes']:
-                node_num = int(node[1:-1])
+            # load rows in saved (visual) order
+            for entry in self._parse_site_rows(config):
                 row = self.tableWidget.rowCount()
                 self.tableWidget.insertRow(row)
-                cn_module_nodenum_Item = Header_Item_NodeNum(node_num)
-                visual_order.append(config['nodes'][node])
-                self.tableWidget.setVerticalHeaderItem(row, cn_module_nodenum_Item)
-
-            # Restore row order (important to do this LAST)
-            for i, visual_index in enumerate(visual_order):
-                self.tableWidget.verticalHeader().moveSection(self.tableWidget.verticalHeader().visualIndex(i), visual_index)
-            for _media_conv in _media_convs:
-                self.add_media_converter()
-                self.tableWidget.verticalHeader().moveSection(self.tableWidget.rowCount()-1, _media_conv)
+                if entry == MEDIA_CONVERTER:
+                    self.tableWidget.setVerticalHeaderItem(row, QTableWidgetItem(MEDIA_CONVERTER))
+                else:
+                    self.tableWidget.setVerticalHeaderItem(row, Header_Item_NodeNum(int(entry[1:-1])))
             self._site_loaded = True
             self._site_changed = False
+            self._paused = False
+            self._update_run_buttons()
             log.info(f"Configuration loaded from {site_conf_filename}")
 
         except FileNotFoundError:
@@ -761,8 +771,14 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         pass
 
     def connectSignalsSlots(self):
-        self.pushButtonConnect.clicked.connect(self.onButtonConnect)
+        self.pushButtonScan.clicked.connect(self.onButtonScan)
+        self.pushButtonShow.clicked.connect(self.onButtonShow)
         self.pushButtonPause.clicked.connect(self.onButtonPause)
+        # exclusive pair: exactly one of Show/Pause stays pressed
+        self._run_button_group = QButtonGroup(self)
+        self._run_button_group.setExclusive(True)
+        self._run_button_group.addButton(self.pushButtonShow)
+        self._run_button_group.addButton(self.pushButtonPause)
         self.actionAbout.triggered.connect(self.about)
         self.actionLoad_site.triggered.connect(self.load_site_from_file)
         self.actionSave.triggered.connect(self.save_site_config)
@@ -870,37 +886,51 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         else:
             self.led_blink_timer.setInterval(old_value)
 
-    def onButtonConnect(self):
-        widgets_to_disable =  self.lineEditConnectionPath, self.pushButtonConnect
-        for _w in widgets_to_disable:
-            _w.setEnabled(False)
+    def _find_row_by_node(self, node_num: int):
+        """Returns the table row for a node number, or None."""
+        text = f'[{node_num:02}]'
+        for row in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.verticalHeaderItem(row)
+            if item and item.text() == text:
+                return row
+        return None
+
+    def _update_run_buttons(self):
+        """Show/Pause form an exclusive pair: one stays pressed, the other released."""
+        has_workers = bool(self._workers)
+        self.pushButtonShow.setEnabled(has_workers)
+        self.pushButtonPause.setEnabled(has_workers)
+        (self.pushButtonPause if self._paused else self.pushButtonShow).setChecked(True)
+
+    def onButtonScan(self):
+        """Scans the ControlNet network for nodes and (re)starts polling workers."""
         _path = self.lineEditConnectionPath.text()
-
+        self.lineEditConnectionPath.setEnabled(False)
+        self.pushButtonScan.setEnabled(False)
         self._app.instance().setOverrideCursor(QCursor(Qt.CursorShape.BusyCursor))
-
         try:
             nodes, paths = scan_cn(_path, p=log.debug)
         except (TimeoutError, CommError) as e:
-            self._app.instance().restoreOverrideCursor()
             log.critical(f"Error Scanning ControlNet (no route to IP address?) {e}")
             QMessageBox.critical(self, "Error Scanning ControlNet",
                                  f"Error occurs while scanning ControlNet!\n(no route to IP address?)\n\n"
                                  f"{e}")
-            for _w in widgets_to_disable:
-                _w.setEnabled(True)  # restore widgets
             return
         except RequestError as e:
-            self._app.instance().restoreOverrideCursor()
             log.critical(f"Error Scanning ControlNet (bad connection path?) {e}")
             QMessageBox.critical(self, "Error Scanning ControlNet",
                                  f"Error occurs while scanning ControlNet!\n(bad connection path?)\n\n"
                                  f"{e}")
-            for _w in widgets_to_disable:
-                _w.setEnabled(True)  # restore widgets
             return
+        finally:
+            self._app.instance().restoreOverrideCursor()
+            self.lineEditConnectionPath.setEnabled(True)
+            self.pushButtonScan.setEnabled(True)
         log.info(f'ControlNet [{_path}] scan complete')
-        if not self._site_loaded:
-            self.tableWidget.setRowCount(len(nodes))
+
+        for worker in self._workers.values():
+            worker.stop()
+        self._workers = {}
 
         #columns
         self.tableWidget.setColumnCount(len(LABELS))
@@ -913,43 +943,53 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             column_header_item.setFont(font)  # Set the modified font back
             self.tableWidget.setHorizontalHeaderItem(column, column_header_item)
 
-        # labels = [s.sid for s in LABELS]
-        # self.tableWidget.setHorizontalHeaderLabels(labels)
+        if not self._site_loaded:
+            self.tableWidget.setRowCount(len(nodes))
 
-        row = -1
-        for cn_module_serial, cn_path in paths.items():
-            row += 1
+        for row, (cn_module_serial, cn_path) in enumerate(paths.items()):
             node_num = int(cn_path.split('/')[-1])
+
+            if self._site_loaded:
+                target_row = self._find_row_by_node(node_num)
+                if target_row is None:
+                    log.warning(f'Node [{node_num:02}] found on network but absent in the loaded site; skipped')
+                    continue
+            else:
+                target_row = row
+                self.tableWidget.setVerticalHeaderItem(target_row, Header_Item_NodeNum(node_num))
+            self.tableWidget.setItem(target_row, 0, QTableWidgetItem(str(cn_module_serial)))
 
             cn_node_worker = PLCConnectionWorker(node_num)
             cn_node_worker.path = cn_path
             cn_node_worker.signals.read_done.connect(self.update_diag_data)
             cn_node_worker.signals.read_done.connect(self.MyCrossTable.update_diag_data)
             cn_node_worker.start()
-
             self._workers[node_num] = cn_node_worker
 
-            if not self._site_loaded:  #TODO
-                cn_module_nodenum_Item = Header_Item_NodeNum(node_num)
-                self.tableWidget.setVerticalHeaderItem(row, cn_module_nodenum_Item)
-
-                cn_module_serial_Item = QTableWidgetItem(str(cn_module_serial))
-                self.tableWidget.setItem(row, 0, cn_module_serial_Item)
-
         self.tableWidget.load_configuration()
-        self._app.instance().restoreOverrideCursor()
         self.MyCrossTable.fill_table(self.tableWidget)
         self.pushButtonAddMediaConverter.setEnabled(True)
-        self.pushButtonPause.setEnabled(True)
         self.led_blink_timer.start()
-        return
+        self._paused = False
+        self._update_run_buttons()
 
-    def onButtonPause(self, state):
-        log.info(f'Paused = {state}')
-        for node_num, w in self._workers.items():
-            assert isinstance(w, PLCConnectionWorker)
-            w.pause(state)
-            log.debug(f'paused [{node_num:02}] = {state}')
+    def onButtonPause(self):
+        log.info('Pause reading')
+        for node_num, worker in self._workers.items():
+            assert isinstance(worker, PLCConnectionWorker)
+            worker.pause(True)
+            log.debug(f'paused [{node_num:02}]')
+        self._paused = True
+        self._update_run_buttons()
+
+    def onButtonShow(self):
+        log.info('Resume reading')
+        for node_num, worker in self._workers.items():
+            assert isinstance(worker, PLCConnectionWorker)
+            worker.pause(False)
+            log.debug(f'resumed [{node_num:02}]')
+        self._paused = False
+        self._update_run_buttons()
 
     def led_blinker(self):
         global TICK_TACK
