@@ -32,7 +32,10 @@ a = Analysis(
     ['cn_diag_tool.py'],
     pathex=[],
     binaries=[],
-    datas=[(os.path.join(_spec_dir, 'asset'), 'asset')],
+    datas=[
+        (os.path.join(_spec_dir, 'asset'), 'asset'),
+        (os.path.join(_spec_dir, 'changelog.txt'), '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

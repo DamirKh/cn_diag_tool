@@ -1,8 +1,11 @@
 # Constants for clarity
 import os
 import pathlib
+import sys
 
-basedir = os.path.dirname(__file__)
+# In a PyInstaller bundle data files live under sys._MEIPASS (the one-dir "_internal");
+# in a normal run they are next to this module.
+basedir = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
 asset_dir = os.path.join(basedir, 'asset')
 
 Organisation = 'CPC'

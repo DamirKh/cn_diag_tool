@@ -597,8 +597,12 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.load_app_config()
         self.tableWidget._config_file = user_data.get_user_data_path() / 'main_table.json'
 
-        with open( os.path.join(user_data.basedir, 'changelog.txt')) as chlog:
-            self.changelog = chlog.read()
+        try:
+            with open(os.path.join(user_data.basedir, 'changelog.txt'), encoding='utf-8') as chlog:
+                self.changelog = chlog.read()
+        except OSError as e:
+            log.warning(f'changelog.txt not found: {e}')
+            self.changelog = ''
 
 
     @property
