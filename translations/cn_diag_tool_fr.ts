@@ -40,7 +40,7 @@
   <context>
     <name>DiagWindow</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="1385" />
+      <location filename="../cn_diag_tool.py" line="1414" />
       <location filename="../cn_diag_tool.py" line="658" />
       <source>ControlNet diagnostic tool</source>
       <translation>Diagnostic ControlNet</translation>
@@ -77,154 +77,154 @@
       <translation>Connexion à l'automate perdue</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="896" />
+      <location filename="../cn_diag_tool.py" line="898" />
       <source>Language</source>
       <translation>Langue</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="935" />
+      <location filename="../cn_diag_tool.py" line="937" />
       <source>Changelog</source>
       <translation>Journal des modifications</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="969" />
+      <location filename="../cn_diag_tool.py" line="971" />
       <source>Export data to...</source>
       <translation>Exporter les données vers...</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="971" />
+      <location filename="../cn_diag_tool.py" line="973" />
       <source>XLSX Files (*.xlsx);;All Files (*)</source>
       <translation>Fichiers XLSX (*.xlsx);;Tous les fichiers (*)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="978" />
+      <location filename="../cn_diag_tool.py" line="980" />
       <source>Success Exporting Data</source>
       <translation>Export réussi</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="979" />
+      <location filename="../cn_diag_tool.py" line="981" />
       <source>Data exported to</source>
       <translation>Données exportées vers</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="982" />
+      <location filename="../cn_diag_tool.py" line="984" />
       <source>Error Exporting Data</source>
       <translation>Erreur d'export</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="983" />
+      <location filename="../cn_diag_tool.py" line="985" />
       <source>Could not export data to</source>
       <translation>Impossible d'exporter les données vers</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="984" />
+      <location filename="../cn_diag_tool.py" line="986" />
       <source>See log window for details</source>
       <translation>Voir le journal pour les détails</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1010" />
+      <location filename="../cn_diag_tool.py" line="1039" />
       <source>Error</source>
       <translation>Erreur</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1011" />
+      <location filename="../cn_diag_tool.py" line="1040" />
       <source>Unsupported platform:</source>
       <translation>Plateforme non prise en charge :</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1110" />
+      <location filename="../cn_diag_tool.py" line="1139" />
       <source>Path format is valid</source>
       <translation>Format du chemin valide</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1130" />
-      <location filename="../cn_diag_tool.py" line="1118" />
+      <location filename="../cn_diag_tool.py" line="1159" />
+      <location filename="../cn_diag_tool.py" line="1147" />
       <source>ControlNet path</source>
       <translation>Chemin ControlNet</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1131" />
+      <location filename="../cn_diag_tool.py" line="1160" />
       <source>Press "?" for help.</source>
       <translation>Appuyez sur « ? » pour l'aide.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1155" />
-      <location filename="../cn_diag_tool.py" line="1148" />
-      <location filename="../cn_diag_tool.py" line="1141" />
+      <location filename="../cn_diag_tool.py" line="1184" />
+      <location filename="../cn_diag_tool.py" line="1177" />
+      <location filename="../cn_diag_tool.py" line="1170" />
       <source>Error Scanning ControlNet</source>
       <translation>Erreur de balayage ControlNet</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1142" />
+      <location filename="../cn_diag_tool.py" line="1171" />
       <source>Failed to scan ControlNet!
 (no route to the IP address?)</source>
       <translation>Échec du balayage de ControlNet !
 (pas de route vers l'adresse IP ?)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1149" />
+      <location filename="../cn_diag_tool.py" line="1178" />
       <source>Failed to scan ControlNet!
 (bad connection path?)</source>
       <translation>Échec du balayage de ControlNet !
 (chemin de connexion incorrect ?)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1156" />
+      <location filename="../cn_diag_tool.py" line="1185" />
       <source>Failed to scan ControlNet!</source>
       <translation>Échec du balayage de ControlNet !</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1358" />
+      <location filename="../cn_diag_tool.py" line="1387" />
       <source>Drop all</source>
       <translation>Tout effacer</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1359" />
+      <location filename="../cn_diag_tool.py" line="1388" />
       <source>Drop all data? Any unsaved changes will be lost.</source>
       <translation>Effacer toutes les données ? Les modifications non enregistrées seront perdues.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1400" />
+      <location filename="../cn_diag_tool.py" line="1429" />
       <source>Close the program?</source>
       <translation>Quitter le programme ?</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1401" />
+      <location filename="../cn_diag_tool.py" line="1430" />
       <source>Are you sure to quit? Any unsaved changes will be lost.</source>
       <translation>Quitter le programme ? Les modifications non enregistrées seront perdues.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1417" />
+      <location filename="../cn_diag_tool.py" line="1446" />
       <source>About ControlNet Diagnostic Tool</source>
       <translation>À propos de ControlNet Diagnostic Tool</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1418" />
+      <location filename="../cn_diag_tool.py" line="1447" />
       <source>Version:</source>
       <translation>Version :</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1419" />
+      <location filename="../cn_diag_tool.py" line="1448" />
       <source>Commit:</source>
       <translation>Commit :</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1420" />
+      <location filename="../cn_diag_tool.py" line="1449" />
       <source>By using ControlNet Diagnostic Tool</source>
       <translation>En utilisant ControlNet Diagnostic Tool,</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1421" />
+      <location filename="../cn_diag_tool.py" line="1450" />
       <source>you can significantly improve the troubleshooting speed of ControlNet networks.</source>
       <translation>vous pouvez accélérer considérablement le diagnostic des réseaux ControlNet.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1425" />
+      <location filename="../cn_diag_tool.py" line="1454" />
       <source>Fugue Icons (C) 2013 Yusuke Kamiyamane. All rights reserved.</source>
       <translation>Fugue Icons (C) 2013 Yusuke Kamiyamane. Tous droits réservés.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1426" />
+      <location filename="../cn_diag_tool.py" line="1455" />
       <source>System:</source>
       <translation>Système :</translation>
     </message>
@@ -996,6 +996,16 @@ Indique un problème réseau.</translation>
       <location filename="../ui/cn_diag_tool.main.ui" line="0" />
       <source>Add media converter</source>
       <translation>Ajouter un convertisseur</translation>
+    </message>
+    <message>
+      <location filename="../ui/cn_diag_tool.main.ui" line="0" />
+      <source>Delete the selected media converter row(s)</source>
+      <translation>Supprimer la ou les lignes de convertisseur sélectionnées</translation>
+    </message>
+    <message>
+      <location filename="../ui/cn_diag_tool.main.ui" line="0" />
+      <source>Remove</source>
+      <translation>Supprimer</translation>
     </message>
     <message>
       <location filename="../ui/cn_diag_tool.main.ui" line="0" />

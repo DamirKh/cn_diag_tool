@@ -16,3 +16,11 @@
 0.17 Name and Rev columns added (saved in the site)
 1.0 First stable release
 1.1 Updated diagnostic counter descriptions
+1.2 Internationalization (English/Russian/French)
+     Cross table shows complaint counts
+     ControlNet path help and validation
+     Dialog geometry is remembered between runs
+     File/Drop all added
+     Media converter rows can be removed
+     Numeric cells are right-aligned
+     Unsaved changes are detected on exit

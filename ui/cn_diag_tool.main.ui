@@ -98,17 +98,46 @@
      <widget class="DraggableTableWidget" name="tableWidget"/>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButtonAddMediaConverter">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Add media converter</string>
-      </property>
-      <property name="flat">
-       <bool>false</bool>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout_media">
+      <item>
+       <widget class="QPushButton" name="pushButtonAddMediaConverter">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Add media converter</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonRemoveMediaConverter">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Delete the selected media converter row(s)</string>
+        </property>
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

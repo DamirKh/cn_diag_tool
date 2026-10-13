@@ -886,6 +886,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.actionChangelog.triggered.connect(self.onChangeLog)
         self.actionAck.triggered.connect(self.acknowledge)
         self.actionDrop_all.triggered.connect(self.on_drop_all)
+        self.pushButtonRemoveMediaConverter.clicked.connect(self.remove_media_converter)
+        self.tableWidget.itemSelectionChanged.connect(self._update_remove_button)
         self._setup_language_menu()
 
     def _setup_language_menu(self):
@@ -991,6 +993,33 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.tableWidget.insertRow(new_row)
         self.tableWidget.setVerticalHeaderItem(new_row, cn_media_converter_item)
         self._site_changed = True
+
+    def _selected_media_rows(self):
+        """Returns the selected row indexes whose vertical header is a media converter."""
+        rows = []
+        selection = self.tableWidget.selectionModel()
+        if selection is None:
+            return rows
+        for index in selection.selectedRows():
+            item = self.tableWidget.verticalHeaderItem(index.row())
+            if item and item.text() == MEDIA_CONVERTER:
+                rows.append(index.row())
+        return rows
+
+    def _update_remove_button(self):
+        self.pushButtonRemoveMediaConverter.setEnabled(bool(self._selected_media_rows()))
+
+    def remove_media_converter(self):
+        """Removes the selected media converter row(s)."""
+        rows = sorted(self._selected_media_rows(), reverse=True)
+        if not rows:
+            return
+        log.debug(f"Remove {len(rows)} media converter row(s)")
+        for row in rows:
+            self.tableWidget.removeRow(row)
+        self._site_changed = True
+        self.MyCrossTable.fill_table(self.tableWidget)
+        self._update_remove_button()
 
     def on_write_enable(self, state):
         log.debug(f"Counters reset enabled = {state}")
