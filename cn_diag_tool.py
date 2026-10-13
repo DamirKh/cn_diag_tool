@@ -2,6 +2,7 @@ import datetime
 import subprocess
 import logging
 import os
+import re
 import sys
 import time
 
@@ -317,12 +318,65 @@ LABELS = [
 # sid -> logical column index (column order is fixed by LABELS; only visual order changes)
 COLUMN_INDEX = {label.sid: index for index, label in enumerate(LABELS)}
 
+# text columns stay left-aligned, all other (numeric) columns are right-aligned
+TEXT_SIDS = {'Serial', 'Name', 'Rev', 'Active_Channel', 'Redundancy_Warning'}
+
+
+def alignment_for_sid(sid: str):
+    """Left alignment for text columns, right alignment for numeric ones."""
+    horizontal = Qt.AlignmentFlag.AlignLeft if sid in TEXT_SIDS else Qt.AlignmentFlag.AlignRight
+    return horizontal | Qt.AlignmentFlag.AlignVCenter
+
+
+def data_item(sid: str, text: str) -> QTableWidgetItem:
+    """Creates a table cell with alignment based on the column type."""
+    item = QTableWidgetItem(text)
+    item.setTextAlignment(alignment_for_sid(sid))
+    return item
+
+
+# ControlNet base path: "<address>/bp/<slot>/..." (address is IPv4 or a hostname)
+_CN_PATH_START = re.compile(r'^[A-Za-z0-9.-]+/bp/\d+/', re.IGNORECASE)
+
+CN_PATH_HELP = (
+    "<b>Формат пути ControlNet</b><br><br>"
+    "<code>&lt;адрес&gt;/bp/&lt;слот&gt;/cnet</code> — базовый путь: адрес контроллера и "
+    "backplane-слот с модулем ControlNet.<br>"
+    "<code>/&lt;узел&gt;/bp/&lt;слот&gt;/cnet</code> — дополнительный хоп при цепочке сетей "
+    "ControlNet (узел, на котором стоит мост).<br><br>"
+    "Путь всегда заканчивается на <code>/cnet</code>; номера узлов программа дописывает сама.<br>"
+    "Адрес — IPv4 или имя хоста.<br><br>"
+    "<b>Примеры:</b><br>"
+    "<code>11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet/2/bp/2/cnet</code><br>"
+    "<code>11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet</code>"
+)
+
+
+def validate_cn_path(path: str):
+    """Validates a ControlNet base path; returns (ok, error_message)."""
+    p = (path or '').strip()
+    if not p:
+        return False, 'Путь пуст'
+    if not _CN_PATH_START.match(p):
+        return False, 'Путь должен начинаться с <адрес>/bp/<номер>/'
+    if not p.lower().endswith('/cnet'):
+        return False, 'Путь должен заканчиваться на /cnet'
+    return True, ''
+
 
 class GeometrySaver(QWidget):
     def geometry_saver_init(self, settings_key: str):
         self.geometry_saver_settings = Glob_settings
         self._geometry_settings_key = settings_key
         self.restore_geometry()
+        # QDialog closes through done() (accept/reject), which does not emit closeEvent,
+        # so also persist on the finished signal when available.
+        finished = getattr(self, 'finished', None)
+        if finished is not None:
+            finished.connect(self._save_geometry_on_finish)
+
+    def _save_geometry_on_finish(self, _result=None):
+        self.save_geometry()
 
     def save_geometry(self):
         if self._geometry_settings_key:
@@ -460,6 +514,8 @@ class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
         self.setupUi(self)
         self.connectSignalsSlots()
         self.geometry_saver_init(settings_key="CrossTableDialog")
+        # node number -> columns currently showing a complaint count (for clearing stale cells)
+        self._complaint_cols = {}
         self.hide()
 
     def connectSignalsSlots(self):
@@ -468,6 +524,7 @@ class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
     def fill_table(self, from_table: QTableWidget):
         log.debug('Fill crosstable')
         self.tableWidget.clear()
+        self._complaint_cols = {}
         rows = from_table.rowCount()
         self.tableWidget.setRowCount(rows)
         self.tableWidget.setColumnCount(rows)
@@ -485,35 +542,54 @@ class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
                     self.tableWidget.setItem(c, visual_index, placeholder.clone())
 
     def update_diag_data(self, node_num, diag_data: dict):
-        """Updates diagnostic data in the crosstable for the specified node.
+        """Updates diagnostics in the crosstable for the specified node.
+
+        Each node has an 8-byte error log (#err_0..#err_7); every non-zero byte holds the
+        number of a node this node "complains" about. The same target may appear in several
+        bytes, so the cell shows how many complaints point to that node.
 
         Args:
             node_num: The node number to update.
             diag_data: A dictionary where keys correspond to column header labels
                        and values are the data to be displayed.
         """
+        source_text = f'[{node_num:02}]'
+        row = None
+        for r in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.verticalHeaderItem(r)
+            if item and item.text() == source_text:
+                row = r
+                break
+        if row is None:
+            return
 
-        for row in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.verticalHeaderItem(row)
-            if item and item.text() == f'[{node_num:02}]':
-                for key, value in diag_data.items():
-                    # ## Node intersection updates here
-                    if type(key) == type('') and key.startswith('#err_'):
-                        if value:
-                            error_node_num_in_log = f'[{value:02}]'
+        # count complaints per target node number
+        counts = {}
+        for key, value in diag_data.items():
+            if isinstance(key, str) and key.startswith('#err_') and value:
+                counts[value] = counts.get(value, 0) + 1
 
-                            for col in range(self.tableWidget.columnCount()):
-                                header_item = self.tableWidget.horizontalHeaderItem(col)
-                                if header_item and header_item.text() == error_node_num_in_log:
-                                    err_item = QTableWidgetItem('')
-                                    if error_node_num_in_log == item.text():
-                                        err_item.setData(Qt.ItemDataRole.DecorationRole, QtGui.QColor('yellow'))
-                                        # err_item.setData(Qt.ItemDataRole.UserRole)
-                                    else:
-                                        err_item.setData(Qt.ItemDataRole.DecorationRole, QtGui.QColor('red'))
-                                    self.tableWidget.setItem(row, col, err_item)
-                                    break  # Found the column
-                    # ## End of Node intersection updates
+        columns = {}
+        for col in range(self.tableWidget.columnCount()):
+            header_item = self.tableWidget.horizontalHeaderItem(col)
+            if header_item:
+                columns[header_item.text()] = col
+
+        shown_cols = set()
+        for target_num, count in counts.items():
+            col = columns.get(f'[{target_num:02}]')
+            if col is None:
+                continue
+            item = QTableWidgetItem(str(count))
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            item.setData(Qt.ItemDataRole.DecorationRole, YELLOW if target_num == node_num else RED)
+            self.tableWidget.setItem(row, col, item)
+            shown_cols.add(col)
+
+        # clear cells that no longer have a complaint
+        for col in self._complaint_cols.get(node_num, set()) - shown_cols:
+            self.tableWidget.setItem(row, col, QTableWidgetItem(''))
+        self._complaint_cols[node_num] = shown_cols
 
 
 class LogWindow(QDialog, GeometrySaver):
@@ -645,6 +721,17 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         config['names'] = self._identity_column_values('Name')
         config['revs'] = self._identity_column_values('Rev')
 
+        # free-text "Serial" ("номер") column of media converter rows, in rows order
+        serial_col = COLUMN_INDEX['Serial']
+        media = []
+        for row in order:
+            item = self.tableWidget.verticalHeaderItem(row)
+            if item and item.text() == MEDIA_CONVERTER:
+                cell = self.tableWidget.item(row, serial_col)
+                media.append(cell.text() if cell else '')
+        if any(media):
+            config['media'] = media
+
         try:
             with open(filename, 'w') as f:
                 json.dump(config, f, indent=4)  # Use indent for readability
@@ -749,17 +836,23 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 'Name': config.get('names', {}),
                 'Rev': config.get('revs', {}),
             }
+            media_notes = config.get('media', [])
+            media_index = 0
             for entry in self._parse_site_rows(config):
                 row = self.tableWidget.rowCount()
                 self.tableWidget.insertRow(row)
                 if entry == MEDIA_CONVERTER:
                     self.tableWidget.setVerticalHeaderItem(row, QTableWidgetItem(MEDIA_CONVERTER))
+                    if media_index < len(media_notes) and media_notes[media_index]:
+                        self.tableWidget.setItem(row, COLUMN_INDEX['Serial'],
+                                                 data_item('Serial', str(media_notes[media_index])))
+                    media_index += 1
                     continue
                 self.tableWidget.setVerticalHeaderItem(row, Header_Item_NodeNum(int(entry[1:-1])))
                 for sid, mapping in identity_maps.items():
                     value = mapping.get(entry)
                     if value:
-                        self.tableWidget.setItem(row, COLUMN_INDEX[sid], QTableWidgetItem(str(value)))
+                        self.tableWidget.setItem(row, COLUMN_INDEX[sid], data_item(sid, str(value)))
             self.tableWidget.load_configuration()
             self._site_loaded = True
             self._site_changed = False
@@ -792,6 +885,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def connectSignalsSlots(self):
         self.pushButtonScan.clicked.connect(self.onButtonScan)
+        self.pushButtonPathHelp.clicked.connect(self.show_path_help)
+        self.lineEditConnectionPath.textChanged.connect(self.on_path_changed)
         self.pushButtonShow.clicked.connect(self.onButtonShow)
         self.pushButtonPause.clicked.connect(self.onButtonPause)
         # exclusive pair: exactly one of Show/Pause stays pressed
@@ -814,6 +909,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.actionDrop_Counters.triggered.connect(self.onResetCounters)
         self.actionChangelog.triggered.connect(self.onChangeLog)
         self.actionAck.triggered.connect(self.acknowledge)
+        self.actionDrop_all.triggered.connect(self.on_drop_all)
 
     def onChangeLog(self):
         QMessageBox.information(
@@ -926,11 +1022,12 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         col = COLUMN_INDEX[sid]
         item = self.tableWidget.item(row, col)
         if item is None:
-            self.tableWidget.setItem(row, col, QTableWidgetItem(text))
+            self.tableWidget.setItem(row, col, data_item(sid, text))
         else:
             if item.text() != text:
                 item.setData(Qt.ItemDataRole.DecorationRole, YELLOW)
             item.setText(text)
+            item.setTextAlignment(alignment_for_sid(sid))
 
     def _identity_column_values(self, sid):
         """Collects non-empty values of an identity column, keyed by row label ("[NN]")."""
@@ -981,9 +1078,37 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 self._retired_workers.append(worker)
         self._retired_workers = [worker for worker in self._retired_workers if not worker.isFinished()]
 
+    def on_path_changed(self, text: str):
+        """Live feedback for the ControlNet path field."""
+        if not text.strip():
+            self.lineEditConnectionPath.setStyleSheet('')
+            self.lineEditConnectionPath.setToolTip('')
+            return
+        ok, err = validate_cn_path(text)
+        if ok:
+            self.lineEditConnectionPath.setStyleSheet('border: 1px solid #2e7d32;')
+            self.lineEditConnectionPath.setToolTip('Формат пути корректен')
+        else:
+            self.lineEditConnectionPath.setStyleSheet('border: 1px solid #c62828;')
+            self.lineEditConnectionPath.setToolTip(err)
+
+    def show_path_help(self):
+        """Shows a reference for the ControlNet path format."""
+        box = QMessageBox(self)
+        box.setWindowTitle('ControlNet path')
+        box.setIcon(QMessageBox.Icon.Information)
+        box.setTextFormat(Qt.TextFormat.RichText)
+        box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        box.setText(CN_PATH_HELP)
+        box.exec()
+
     def onButtonScan(self):
         """Scans the ControlNet network for nodes and (re)starts polling workers."""
-        _path = self.lineEditConnectionPath.text()
+        _path = self.lineEditConnectionPath.text().strip()
+        ok, err = validate_cn_path(_path)
+        if not ok:
+            QMessageBox.warning(self, "ControlNet path", f"{err}.\n\nНажмите «?» для справки.")
+            return
         self._stop_workers()
         self.lineEditConnectionPath.setEnabled(False)
         self.pushButtonScan.setEnabled(False)
@@ -1202,9 +1327,50 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                             if old_text!=str_value:
                                 item.setData(Qt.ItemDataRole.DecorationRole, YELLOW)
                         item.setText(str_value)
+                        item.setTextAlignment(alignment_for_sid(key))
                     else:
-                        new_item = QTableWidgetItem(str_value)
-                        self.tableWidget.setItem(row, col, new_item)
+                        self.tableWidget.setItem(row, col, data_item(key, str_value))
+
+    def on_drop_all(self):
+        """Stops polling and clears all data, as if the program was just started."""
+        if self._confirm_on_close and self._site_changed:
+            reply = QMessageBox.question(self, 'Drop all',
+                "Drop all data? Any unsaved changes will be lost.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        log.info('Drop all: resetting to initial state')
+
+        self._stop_workers()
+        self.led_blink_timer.stop()
+
+        # main table
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.setColumnCount(0)
+
+        # cross table
+        self.MyCrossTable.tableWidget.clear()
+        self.MyCrossTable.tableWidget.setRowCount(0)
+        self.MyCrossTable.tableWidget.setColumnCount(0)
+        self.MyCrossTable._complaint_cols = {}
+
+        # site / connection state
+        self._config_file_path = None
+        self._site_loaded = False
+        self._site_changed = False
+        self._paused = False
+        self.setWindowTitle("ControlNet diagnostic tool")
+        self.lineEditConnectionPath.clear()
+        self.lineEditConnectionPath.setEnabled(True)
+        self.pushButtonScan.setEnabled(True)
+        self.pushButtonAddMediaConverter.setEnabled(False)
+        self.actionEnable_writing_to_PLC.setChecked(False)
+        self._reset_enabled = False
+        self.actionDrop_Counters.setEnabled(False)
+        self._update_run_buttons()
+        self.status_bar_label_1.setText("Not connected yet")
 
     def closeEvent(self, event):
         self.save_app_config()
@@ -1216,6 +1382,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             if reply != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
+        # persist geometry of the detached dialogs that may only have been hidden, not closed
+        self.logger_window.save_geometry()
+        self.MyCrossTable.save_geometry()
         self._stop_workers()
         event.accept()
 

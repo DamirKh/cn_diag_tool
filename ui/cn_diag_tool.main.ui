@@ -31,12 +31,29 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEditConnectionPath"/>
+       <widget class="QLineEdit" name="lineEditConnectionPath">
+        <property name="placeholderText">
+         <string>192.168.0.189/bp/6/cnet</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonPathHelp">
+        <property name="toolTip">
+         <string>Справка по формату пути ControlNet</string>
+        </property>
+        <property name="text">
+         <string>?</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonScan">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Сканировать сеть ControlNet по указанному пути, найти модули и запустить опрос</string>
         </property>
         <property name="text">
          <string>Scan CN</string>
@@ -113,10 +130,11 @@
     <addaction name="actionSave_as"/>
     <addaction name="actionShow_CrossTable"/>
     <addaction name="actionOpen_config_folder"/>
-    <addaction name="actionShow_log"/>
-    <addaction name="actionExport_to_Excel"/>
-   </widget>
-   <widget class="QMenu" name="menuConfig_2">
+     <addaction name="actionShow_log"/>
+     <addaction name="actionExport_to_Excel"/>
+     <addaction name="actionDrop_all"/>
+    </widget>
+    <widget class="QMenu" name="menuConfig_2">
     <property name="title">
      <string>Config</string>
     </property>
@@ -288,6 +306,14 @@
    </property>
    <property name="toolTip">
     <string>Reset Yellow marks</string>
+   </property>
+  </action>
+  <action name="actionDrop_all">
+   <property name="text">
+    <string>Drop all</string>
+   </property>
+   <property name="toolTip">
+    <string>Остановить опрос, очистить таблицу и сбросить загруженный сайт</string>
    </property>
   </action>
  </widget>
