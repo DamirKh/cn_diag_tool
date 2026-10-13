@@ -9,7 +9,7 @@ import time
 import json
 from fileinput import filename
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QCoreApplication, QT_TRANSLATE_NOOP
 from PyQt6.QtCore import QSettings
 from PyQt6.QtGui import QCursor, QColor, QBrush, QFont
 from PyQt6 import QtWidgets, QtCore, QtGui
@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import QMainWindow, QApplication, QProgressDialog, QVBoxLay
 
 import user_data
 import ver
+import i18n
 
 #https://stackoverflow.com/a/66104687/8124158
 QtCore.QDir.addSearchPath('asset', user_data.asset_dir)
@@ -64,253 +65,211 @@ class HeaderData(object):
 
 LABELS = [
     HeaderData('Serial',
-               comment='номер',
-               hint='Серийный номер',
-               longread="Серийный номер модуля (8 hex-цифр).",
+               comment=QT_TRANSLATE_NOOP("LABELS", "no."),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Module serial number"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Module serial number (8 hex digits)."),
                woc=True,
                ),
     HeaderData('Name',
-               comment='Name',
-               hint='Имя модуля',
-               longread="Каталожное имя/номер модуля (например, 1756-CNB).",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Name"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Module name"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Module catalog name/number (e.g. 1756-CNB)."),
                woc=True,
                ),
     HeaderData('Rev',
-               comment='Rev',
-               hint='Ревизия',
-               longread="Ревизия (версия прошивки) модуля, формат major.minor.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Rev"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Revision"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Module firmware revision, major.minor."),
                woc=True,
                ),
     HeaderData('reply_time',
-               comment='Ответ',
-               hint='Время ответа, мкс',
-               longread="Время ответа на запрос диагностики, микросекунды.\n"
-                        "Включает накладные расходы, поэтому оценочно и малоинформативно.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Reply"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Response time, us"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Response time to a diagnostic request, microseconds.\nIncludes overhead, so it is approximate and not very informative."),
                ),
     HeaderData('LED_A',
-               comment='A',
-               hint='Состояние индикатора A',
-               longread="Состояние индикатора канала A (значения 0–7):\n"
-                        "0 — выключен; 1 — зелёный; 2 — мигающий зелёный;\n"
-                        "3 — мигающий красный; 4 — красный+зелёный;\n"
-                        "5 — «железнодорожный» красный; 6 — «ж/д» красный+зелёный; 7 — красный.\n"
-                        "Состояния, при которых нет связи с модулем, не отображаются.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "A"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel A indicator"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Channel A indicator state (values 0-7):\n0 - off; 1 - solid green; 2 - flashing green;\n3 - flashing red; 4 - red+green;\n5 - railroad red; 6 - railroad red+green; 7 - solid red.\nStates with no link to the module cannot be shown."),
                ),
     HeaderData('LED_B',
-               comment='B',
-               hint='Состояние индикатора B',
-               longread="Состояние индикатора канала B (значения 0–7):\n"
-                        "0 — выключен; 1 — зелёный; 2 — мигающий зелёный;\n"
-                        "3 — мигающий красный; 4 — красный+зелёный;\n"
-                        "5 — «железнодорожный» красный; 6 — «ж/д» красный+зелёный; 7 — красный.\n"
-                        "Состояния, при которых нет связи с модулем, не отображаются.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "B"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel B indicator"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Channel B indicator state (values 0-7):\n0 - off; 1 - solid green; 2 - flashing green;\n3 - flashing red; 4 - red+green;\n5 - railroad red; 6 - railroad red+green; 7 - solid red.\nStates with no link to the module cannot be shown."),
                ),
     HeaderData('channel_A_frame_error',
-               comment='A err',
-               hint='Ошибки формата канала A',
-               longread="Кадры, принятые по каналу A с ошибкой формата (framing error).\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: проблема физуровня канала A — кабель, разъём, терминатор, помехи.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "A err"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel A framing errors"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Frames received on channel A with a framing error.\nWidth: 8 bits.\nIndicates a channel A physical-layer problem - cable, connector, terminator, noise."),
                woc=True,
                ),
     HeaderData('channel_A_frame_error/s',
-               comment='A err/s',
-               hint='Ошибки канала A в секунду',
-               longread="Приращение счётчика ошибок канала A за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "A err/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel A errors per second"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the channel A error counter over the last second."),
                ),
     HeaderData('channel_B_frame_error',
-               comment='B err',
-               hint='Ошибки формата канала B',
-               longread="Кадры, принятые по каналу B с ошибкой формата (framing error).\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: проблема физуровня канала B — кабель, разъём, терминатор, помехи.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "B err"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel B framing errors"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Frames received on channel B with a framing error.\nWidth: 8 bits.\nIndicates a channel B physical-layer problem - cable, connector, terminator, noise."),
                woc=True,
                ),
     HeaderData('channel_B_frame_error/s',
-               comment='B err/s',
-               hint='Ошибки канала B в секунду',
-               longread="Приращение счётчика ошибок канала B за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "B err/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Channel B errors per second"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the channel B error counter over the last second."),
                ),
     HeaderData('selected_channel_frame_error',
-               comment='Err',
-               hint='Ошибки активного канала',
-               longread="Кадры, принятые по активному (выбранному) каналу с ошибкой формата.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: проблема физуровня текущего активного канала.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Err"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Active channel errors"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Frames received on the active (selected) channel with a framing error.\nWidth: 8 bits.\nIndicates a physical-layer problem on the current active channel."),
                woc=True,
                ),
     HeaderData('selected_channel_frame_error/s',
-               comment='Err/s',
-               hint='Ошибки активного канала в секунду',
-               longread="Приращение счётчика ошибок активного канала за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Err/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Active channel errors per second"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the active-channel error counter over the last second."),
                ),
     HeaderData('Active_Channel',
-               comment='Акт.',
-               hint='Активный канал',
-               longread="Канал, выбранный активным для приёма: A или B.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Act."),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Active channel"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Channel selected as active for reception: A or B."),
                ),
     HeaderData('Redundancy_Warning',
-               comment='Резерв',
-               hint='Потеря резерва',
-               longread="Флаг потери резерва.\n"
-                        "Активен, когда резервный канал/сеть недоступны.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "Redund."),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Redundancy lost"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Redundancy loss flag.\nActive when the backup channel/network is unavailable."),
                ),
     HeaderData('good_frames_transmitted',
-               comment='⇑',
-               hint='Успешно передано кадров',
-               longread="Счётчик успешно переданных кадров (Good Tx).\n"
-                        "Разрядность: 24 бита.\n"
-                        "Более информативно поле «⇑/с».",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇑"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Good frames transmitted"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Successfully transmitted frames (Good Tx).\nWidth: 24 bits.\nThe «⇑/s» column is more informative."),
                ),
     HeaderData('good_frames_transmitted/s',
-               comment='⇑/с',
-               hint='Передано кадров/с',
-               longread="Приращение счётчика успешно переданных кадров за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇑/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Transmitted frames/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the good-transmit counter over the last second."),
                ),
     HeaderData('aborted_frame_transmitted',
-               comment='⇞',
-               hint='Обрыв передачи',
-               longread="Счётчик прерванных передач (Tx-Abort): передача пакета остановлена, так как модуль не успевал выдавать данные на провод.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: перегрузка модуля или проблема физуровня.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇞"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Transmit abort"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Transmit abort counter (Tx-Abort): a packet was aborted because the module could not feed data onto the wire fast enough.\nWidth: 8 bits.\nIndicates module overload or a physical-layer problem."),
                woc=True,
                ),
     HeaderData('good_frames_received',
-               comment='⇓',
-               hint='Успешно принято кадров',
-               longread="Счётчик успешно принятых кадров (Good Rx).\n"
-                        "Разрядность: 24 бита.\n"
-                        "Более информативно поле «⇓/с».",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇓"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Good frames received"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Successfully received frames (Good Rx).\nWidth: 24 bits.\nThe «⇓/s» column is more informative."),
                ),
     HeaderData('good_frames_received/s',
-               comment='⇓/с',
-               hint='Принято кадров/с',
-               longread="Приращение счётчика успешно принятых кадров за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇓/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Received frames/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the good-receive counter over the last second."),
                ),
     HeaderData('aborted_frames_received',
-               comment='⇟',
-               hint='Обрыв приёма',
-               longread="Счётчик прерванных приёмов (Rx-Abort): приём пакета с провода прерван.\n"
-                        "Разрядность: 8 бит.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇟"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Receive abort"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Receive abort counter (Rx-Abort): reception of a packet from the wire was aborted.\nWidth: 8 bits."),
                ),
     HeaderData('noise_hits',
-               comment='∿',
-               hint='Шумовые срабатывания',
-               longread="Счётчик шумовых срабатываний (Noise-Hits): не удалось обнаружить начало кадра из-за помех.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: качество сигнала; рост — электромагнитные помехи (заземление, экран, прокладка кабеля).",
+               comment=QT_TRANSLATE_NOOP("LABELS", "∿"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Noise hits"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Noise-hit counter: the start of a frame could not be detected because of noise.\nWidth: 8 bits.\nIndicates signal quality; growth means electromagnetic interference (grounding, shielding, cable routing)."),
                woc=True,
                ),
     HeaderData('noise_hits/s',
-               comment='∿/с',
-               hint='Шумовые срабатывания/с',
-               longread="Приращение счётчика шумовых срабатываний за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "∿/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Noise hits/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the noise-hit counter over the last second."),
                ),
     HeaderData('collisions',
-               comment='⇆',
-               hint='Коллизии',
-               longread="Счётчик коллизий: узел пытался передавать, когда канал уже занят другим узлом.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: в CTDMA-сети норма близка к нулю; рост — шум, помехи или неверная конфигурация.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇆"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Collisions"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Collision counter: the node tried to transmit while the channel was already busy with another node.\nWidth: 8 bits.\nIn a CTDMA network the norm is close to zero; growth means noise, interference or misconfiguration."),
                woc=True,
                ),
     HeaderData('collisions/s',
-               comment='⇆/с',
-               hint='Коллизии/с',
-               longread="Приращение счётчика коллизий за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇆/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Collisions/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the collision counter over the last second."),
                ),
     HeaderData('highwaters',
-               comment='OVRL',
-               hint='Переполнение буферов LLC',
-               longread="Переполнение/истощение буферов LLC: underflow при передаче, overflow при приёме.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: приёмные буферы переполнены или передача не успевает за потоком.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "OVRL"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "LLC buffer overflow"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "LLC buffer overflow/starvation: transmit underflow, receive overflow.\nWidth: 8 bits.\nIndicates receive buffers are full or transmission cannot keep up."),
                woc=True,
                ),
     HeaderData('nut_overloads',
-               comment='NUT\nOVRL',
-               hint='Перегрузка NUT',
-               longread="Число NUT, в которых не осталось времени на незапланированную (unscheduled) часть.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: NUT слишком мал или расписание перегружено.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "NUT\nOVRL"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "NUT overload"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Number of NUTs with no time left for the unscheduled part.\nWidth: 8 bits.\nIndicates the NUT is too small or the schedule is overloaded."),
                ),
     HeaderData('nut_overloads/s',
-               comment='NUT\nOVRL/c',
-               hint='Перегрузка NUT/с',
-               longread="Приращение счётчика перегрузок NUT за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "NUT\nOVRL/c"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "NUT overload/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the NUT-overload counter over the last second."),
                woc=True,
                ),
     HeaderData('slot_overloads',
-               comment='SLOT\nOVRL',
-               hint='Перегрузка слота',
-               longread="Перегрузка scheduled-слота: в один NUT поставлено больше запланированных данных, чем допускает параметр SchedMaxFrame.\n"
-                        "Разрядность: 8 бит.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "SLOT\nOVRL"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Slot overload"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Scheduled-slot overload: more scheduled data was queued for one NUT than SchedMaxFrame allows.\nWidth: 8 bits."),
                woc=True,
                ),
     HeaderData('slot_overloads/s',
-               comment='SLOT\nOVRL/s',
-               hint='Перегрузка слота/с',
-               longread="Приращение счётчика перегрузок scheduled-слота за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "SLOT\nOVRL/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Slot overload/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the scheduled-slot overload counter over the last second."),
                ),
     HeaderData('blockages',
-               comment='BLOCK',
-               hint='Блокировка передачи',
-               longread="Блокировка передачи: размер одного L-пакета превышает SchedMaxFrame и не влезает в отведённое на передачу время.\n"
-                        "Разрядность: 8 бит.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "BLOCK"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Transmit blockage"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Transmit blockage: a single L-packet exceeds SchedMaxFrame and does not fit into the allowed transmit time.\nWidth: 8 bits."),
                woc=True,
                ),
     HeaderData('blockages/s',
-               comment='BLOCK\n    /s',
-               hint='Блокировка/с',
-               longread="Приращение счётчика блокировок передачи за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "BLOCK\n    /s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Blockage/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the transmit-blockage counter over the last second."),
                ),
     HeaderData('non_concurrence',
-               comment='NON\nCNCR',
-               hint='Несогласованность',
-               longread="Несогласованность: два и более узла не смогли согласовать, чья очередь передавать (расхождение счётчиков отправленных и принятых сообщений).\n"
-                        "Разрядность: 8 бит.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "NON\nCNCR"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Non-concurrence"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Non-concurrence: two or more nodes could not agree whose turn it is to transmit (mismatch of transmitted/received message counts).\nWidth: 8 bits."),
                woc=True,
                ),
     HeaderData('non_concurrence/s',
-               comment='NON\nCNCR/s',
-               hint='Несогласованность/с',
-               longread="Приращение счётчика несогласованности за последнюю секунду.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "NON\nCNCR/s"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Non-concurrence/s"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the non-concurrence counter over the last second."),
                ),
     HeaderData('lonely_counter',
-               comment='LNLY',
-               hint='Тайм-ауты модератора',
-               longread="Число тайм-аутов ожидания модератора: узел не слышал сеть 8 и более NUT подряд.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: «одинокая» сеть, обрыв или отсутствие модератора.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "LNLY"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Moderator timeouts"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Number of timeouts waiting for the moderator: the node heard nothing from the network for 8 or more NUTs.\nWidth: 8 bits.\nIndicates a lonely network, a break, or a missing moderator."),
                woc=True,
                ),
     HeaderData('duplicate_node',
-               comment='DUP',
-               hint='Дубликат адреса',
-               longread="Обнаружен другой узел с тем же MAC ID (конфликт адресов).\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: норма 0; ненулевое значение — двум устройствам задан один адрес.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "DUP"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Duplicate address"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Another node with the same MAC ID was detected (address conflict).\nWidth: 8 bits.\nThe norm is 0; a non-zero value means two devices share one address."),
                woc=True,
                ),
     HeaderData('mod_mac_id',
-               comment='MOD\nMAC',
-               hint='MAC-адрес модератора',
-               longread="MAC ID текущего узла-модератора (наименьший адрес в сети).\n"
-                        "Информационное значение, не счётчик ошибок.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "MOD\nMAC"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Moderator MAC ID"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "MAC ID of the current moderator node (lowest address on the network).\nInformational value, not an error counter."),
                ),
     HeaderData('non_lowman_mods',
-               comment='nLOW\nmods',
-               hint='Кадры от non-lowman',
-               longread="Число кадров модератора, принятых от узлов с иными сетевыми параметрами (не-lowman), — события несовпадения параметров сети.\n"
-                        "Разрядность: 8 бит.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "nLOW\nmods"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Non-lowman frames"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Number of moderator frames received from nodes with different network parameters (non-lowman) - network parameter mismatch events.\nWidth: 8 bits."),
                woc=True,
                ),
     HeaderData('rogue_count',
-               comment='ROG',
-               hint='Rogue-события',
-               longread="Rogue-события: узлы, передающие вне расписания или некорректно.\n"
-                        "Разрядность: 8 бит.\n"
-                        "На что указывает: нарушение работы сети.",
+               comment=QT_TRANSLATE_NOOP("LABELS", "ROG"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Rogue events"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Rogue events: nodes transmitting outside the schedule or incorrectly.\nWidth: 8 bits.\nIndicates a network problem."),
                woc=True,
                ),
 ]
@@ -335,18 +294,23 @@ def data_item(sid: str, text: str) -> QTableWidgetItem:
     return item
 
 
+def tr_label(text: str) -> str:
+    """Translates a LABELS string (the list is built before the translator exists)."""
+    return QCoreApplication.translate("LABELS", text)
+
+
 # ControlNet base path: "<address>/bp/<slot>/..." (address is IPv4 or a hostname)
 _CN_PATH_START = re.compile(r'^[A-Za-z0-9.-]+/bp/\d+/', re.IGNORECASE)
 
-CN_PATH_HELP = (
-    "<b>Формат пути ControlNet</b><br><br>"
-    "<code>&lt;адрес&gt;/bp/&lt;слот&gt;/cnet</code> — базовый путь: адрес контроллера и "
-    "backplane-слот с модулем ControlNet.<br>"
-    "<code>/&lt;узел&gt;/bp/&lt;слот&gt;/cnet</code> — дополнительный хоп при цепочке сетей "
-    "ControlNet (узел, на котором стоит мост).<br><br>"
-    "Путь всегда заканчивается на <code>/cnet</code>; номера узлов программа дописывает сама.<br>"
-    "Адрес — IPv4 или имя хоста.<br><br>"
-    "<b>Примеры:</b><br>"
+CN_PATH_HELP = QT_TRANSLATE_NOOP("PathHelp",
+    "<b>ControlNet path format</b><br><br>"
+    "<code>&lt;address&gt;/bp/&lt;slot&gt;/cnet</code> - base path: the controller address and the "
+    "backplane slot holding the ControlNet module.<br>"
+    "<code>/&lt;node&gt;/bp/&lt;slot&gt;/cnet</code> - an extra hop for a chain of ControlNet "
+    "networks (the node the bridge sits on).<br><br>"
+    "The path always ends with <code>/cnet</code>; the program appends node numbers itself.<br>"
+    "The address is an IPv4 or a host name.<br><br>"
+    "<b>Examples:</b><br>"
     "<code>11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet/2/bp/2/cnet</code><br>"
     "<code>11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet</code>"
 )
@@ -356,11 +320,11 @@ def validate_cn_path(path: str):
     """Validates a ControlNet base path; returns (ok, error_message)."""
     p = (path or '').strip()
     if not p:
-        return False, 'Путь пуст'
+        return False, QCoreApplication.translate("Path", 'Path is empty')
     if not _CN_PATH_START.match(p):
-        return False, 'Путь должен начинаться с <адрес>/bp/<номер>/'
+        return False, QCoreApplication.translate("Path", 'Path must start with <address>/bp/<number>/')
     if not p.lower().endswith('/cnet'):
-        return False, 'Путь должен заканчиваться на /cnet'
+        return False, QCoreApplication.translate("Path", 'Path must end with /cnet')
     return True, ''
 
 
@@ -405,12 +369,13 @@ class ConfigureDialog(QDialog, GeometrySaver):
 
     def __init__(self, table_widget: QTableWidget, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Configure Data View")
+        self.setWindowTitle(self.tr("Configure Data View"))
         self.tableWidget = table_widget
 
         # Use a QTableWidget for the configuration options
         self.configTable = QTableWidget(0, 3, self)  # 0 rows initially, 3 columns
-        self.configTable.setHorizontalHeaderLabels(["Column Name", "Description", "Visibility"])
+        self.configTable.setHorizontalHeaderLabels(
+            [self.tr("Column Name"), self.tr("Description"), self.tr("Visibility")])
         header = self.configTable.horizontalHeader()
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Stretch column Hint
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Fit checkbox
@@ -430,8 +395,8 @@ class ConfigureDialog(QDialog, GeometrySaver):
                 name_item.setFlags(name_item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)  # Make name read-only
                 self.configTable.setItem(row, 0, name_item)
 
-                hint = QTableWidgetItem(header_data.hint)
-                hint.setToolTip(header_data.longread)
+                hint = QTableWidgetItem(tr_label(header_data.hint))
+                hint.setToolTip(tr_label(header_data.longread))
                 self.configTable.setItem(row, 1, hint)
 
                 check_box = QtWidgets.QCheckBox()
@@ -440,7 +405,7 @@ class ConfigureDialog(QDialog, GeometrySaver):
                 self.configTable.setCellWidget(row, 2, check_box)
 
         except IndexError as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(self, self.tr("Error"), str(e))
             raise  # Reraise for external handling
 
         # Layout
@@ -509,7 +474,7 @@ class Item_Placeholder(QTableWidgetItem):
 class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle("Bad Frame Cross Table")
+        self.setWindowTitle(self.tr("Bad Frame Cross Table"))
 
         self.setupUi(self)
         self.connectSignalsSlots()
@@ -595,7 +560,7 @@ class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
 class LogWindow(QDialog, GeometrySaver):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle("Log Viewer")
+        self.setWindowTitle(self.tr("Log Viewer"))
         self.logTextBox = QTextEditLogger(self)
         # log to text box
         self.logTextBox.setFormatter(
@@ -650,6 +615,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self._config_file_path = None
         self._confirm_on_close = True
         self._site_changed = False
+        self._restarting = False
+        self._saved_snapshot = self._snapshot()  # baseline for "unsaved changes" checks
         self._prev_update_time = time.monotonic_ns()
 
         self._app: QtWidgets.QApplication = QtWidgets.QApplication.instance()
@@ -688,24 +655,14 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
     @config_file_path.setter
     def config_file_path(self, value: str):
         self._config_file_path = value
-        self.setWindowTitle(f"ControlNet diagnostic tool  {value}")
+        self.setWindowTitle(self.tr("ControlNet diagnostic tool") + f"  {value}")
 
     def non_fatal(self, message):
         self.statusBar().showMessage(message, 10000)
 
-    def save_site_config(self, filename=None):
-        """Saves site configuration to a JSON file."""
-
-        filename = filename or self.config_file_path
-        if not filename:
-            self.save_site_config_as()
-            return
-        config = {}
-
-        # CN Settings
-        config['CN'] = {
-            'path': self.lineEditConnectionPath.text(),
-        }
+    def _build_site_config(self):
+        """Collects the current site state (same structure as the saved JSON)."""
+        config = {'CN': {'path': self.lineEditConnectionPath.text()}}
 
         # rows in visual (top-to-bottom) order: node "[NN]" or media converter "=/="
         header = self.tableWidget.verticalHeader()
@@ -732,17 +689,35 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         if any(media):
             config['media'] = media
 
+        return config
+
+    def _snapshot(self):
+        return json.dumps(self._build_site_config(), sort_keys=True, ensure_ascii=False)
+
+    def _has_unsaved_changes(self):
+        return self._saved_snapshot is None or self._snapshot() != self._saved_snapshot
+
+    def save_site_config(self, filename=None):
+        """Saves site configuration to a JSON file."""
+
+        filename = filename or self.config_file_path
+        if not filename:
+            self.save_site_config_as()
+            return
+        config = self._build_site_config()
+
         try:
-            with open(filename, 'w') as f:
+            with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=4)  # Use indent for readability
             log.info(f"Configuration saved to {filename}")
             self._site_changed = False
+            self._saved_snapshot = self._snapshot()
             return True
         except (IOError, OSError) as e:
             log.error(f"Error saving configuration: {e}")
             # Use a QMessageBox for error dialog:
-            QMessageBox.critical(self, "Error Saving Configuration",
-                                 f"Could not save configuration to {filename}:\n{e}")
+            QMessageBox.critical(self, self.tr("Error Saving Configuration"),
+                                 self.tr("Could not save configuration to") + f" {filename}:\n{e}")
             return False
 
     def save_app_config(self):
@@ -781,9 +756,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         prposed_filename_or_dir = self.config_file_path or user_data.get_user_data_path()/'sites'
         filename, _ = QFileDialog.getSaveFileName(
             self,
-            "Save Site Configuration As...",
+            self.tr("Save Site Configuration As..."),
             str(prposed_filename_or_dir),  # Default directory (empty string for user's home directory)
-            "JSON Files (*.json);;All Files (*)",  # Filter
+            self.tr("JSON Files (*.json);;All Files (*)"),  # Filter
         )
 
         if filename:  # Check if the user selected a file
@@ -856,6 +831,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget.load_configuration()
             self._site_loaded = True
             self._site_changed = False
+            self._saved_snapshot = self._snapshot()  # fresh baseline after loading
             self._paused = False
             self._update_run_buttons()
             log.info(f"Configuration loaded from {site_conf_filename}")
@@ -869,9 +845,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         """Load the application configuration from a user-specified JSON file."""
         filename, _ = QFileDialog.getOpenFileName(
             self,
-            "Load Site Configuration From...",
+            self.tr("Load Site Configuration From..."),
             str(user_data.get_user_data_path()/'sites'),  # Default directory (empty string for user's home directory)
-            "JSON Files (*.json);;All Files (*)",  # Filter
+            self.tr("JSON Files (*.json);;All Files (*)"),  # Filter
         )
 
         if filename:  # Check if the user selected a file
@@ -880,7 +856,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def on_connection_lost(self, text_error: str):
         log.error(f"Lost connection {text_error}")
-        QMessageBox.warning(self, f"Connection to PLC lost", text_error)
+        QMessageBox.warning(self, self.tr("Connection to PLC lost"), text_error)
         pass
 
     def connectSignalsSlots(self):
@@ -910,11 +886,53 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.actionChangelog.triggered.connect(self.onChangeLog)
         self.actionAck.triggered.connect(self.acknowledge)
         self.actionDrop_all.triggered.connect(self.on_drop_all)
+        self._setup_language_menu()
+
+    def _setup_language_menu(self):
+        """Builds the Config -> Language submenu from the available languages."""
+        current = i18n.configured_language(Glob_settings)
+        self._language_group = QtGui.QActionGroup(self)
+        self._language_group.setExclusive(True)
+        self._language_menu = QtWidgets.QMenu(self.tr("Language"), self)
+        for code, name in i18n.LANGUAGES.items():
+            action = QtGui.QAction(name, self)
+            action.setCheckable(True)
+            action.setChecked(code == current)
+            action.triggered.connect(lambda _checked, lang=code: self.on_language_changed(lang))
+            self._language_group.addAction(action)
+            self._language_menu.addAction(action)
+        self.menuConfig_2.addMenu(self._language_menu)
+
+    def on_language_changed(self, language):
+        """Stores the chosen language and restarts the application to apply it."""
+        if language == i18n.configured_language(Glob_settings):
+            return
+        log.info(f'Language changed to {language}, restarting')
+        Glob_settings.setValue('Language', language)
+        Glob_settings.sync()
+        self._restart()
+
+    def _restart(self):
+        """Restarts the current application (used after a language change)."""
+        self._restarting = True  # bypass the unsaved-changes prompt, do not persist it
+        self._stop_workers()
+        program = sys.executable
+        args = sys.argv[1:]
+        if not getattr(sys, 'frozen', False):
+            args = [sys.argv[0], *args]
+        started = QtCore.QProcess.startDetached(program, args)
+        if isinstance(started, tuple):
+            started = started[0]
+        if not started:
+            log.error('Failed to restart the application')
+            self._restarting = False
+            return
+        QApplication.quit()
 
     def onChangeLog(self):
         QMessageBox.information(
             self,
-            'Changelog',
+            self.tr('Changelog'),
             self.changelog,
         )
 
@@ -948,21 +966,22 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         if len(self._workers):
             filename, _ = QFileDialog.getSaveFileName(
                 self,
-                "Export data to...",
+                self.tr("Export data to..."),
                 "",  # Default directory (empty string for user's home directory)
-                "XLSX Files (*.xlsx);;All Files (*)",  # Filter
+                self.tr("XLSX Files (*.xlsx);;All Files (*)"),  # Filter
             )
 
             if filename:  # Check if the user selected a file
                 if not filename.lower().endswith(".xlsx"):
                     filename += ".xlsx"  # Add .xlsx extension if not present
                 if self.tableWidget.export_to_excel(filename=filename):  # if success
-                    QMessageBox.information(self, "Success Exporting Data",
-                                         f"Data exported to {filename}")
+                    QMessageBox.information(self, self.tr("Success Exporting Data"),
+                                         self.tr("Data exported to") + f" {filename}")
                     pass
                 else:
-                    QMessageBox.critical(self, "Error Exporting Data",
-                                         f"Could not export data to {filename}:\n See log window for details")
+                    QMessageBox.critical(self, self.tr("Error Exporting Data"),
+                                         self.tr("Could not export data to") + f" {filename}:\n"
+                                         + self.tr("See log window for details"))
 
     def add_media_converter(self):
         cn_media_converter_item = QTableWidgetItem(MEDIA_CONVERTER)
@@ -988,7 +1007,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         elif sys.platform == "linux":
             subprocess.run(["xdg-open", directory_path])
         else:
-            QMessageBox.warning(self, "Error", f"Unsupported platform: {sys.platform}")
+            QMessageBox.warning(self, self.tr("Error"),
+                                self.tr("Unsupported platform:") + f" {sys.platform}")
 
     def on_read_timer_conf(self):
         old_value = self.led_blink_timer.interval()
@@ -1006,9 +1026,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         """Creates the diagnostic columns and their headers from LABELS."""
         self.tableWidget.setColumnCount(len(LABELS))
         for column, header_data in enumerate(LABELS):
-            column_header_item = QTableWidgetItem(header_data.comment)
+            column_header_item = QTableWidgetItem(tr_label(header_data.comment))
             column_header_item.setData(My_ROLE, header_data)
-            column_header_item.setToolTip(header_data.longread)
+            column_header_item.setToolTip(tr_label(header_data.longread))
             font = column_header_item.font()  # Get the current font
             font.setPointSize(12)  # Set the desired point size (e.g., 12)
             column_header_item.setFont(font)  # Set the modified font back
@@ -1087,7 +1107,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         ok, err = validate_cn_path(text)
         if ok:
             self.lineEditConnectionPath.setStyleSheet('border: 1px solid #2e7d32;')
-            self.lineEditConnectionPath.setToolTip('Формат пути корректен')
+            self.lineEditConnectionPath.setToolTip(self.tr('Path format is valid'))
         else:
             self.lineEditConnectionPath.setStyleSheet('border: 1px solid #c62828;')
             self.lineEditConnectionPath.setToolTip(err)
@@ -1095,11 +1115,11 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
     def show_path_help(self):
         """Shows a reference for the ControlNet path format."""
         box = QMessageBox(self)
-        box.setWindowTitle('ControlNet path')
+        box.setWindowTitle(self.tr('ControlNet path'))
         box.setIcon(QMessageBox.Icon.Information)
         box.setTextFormat(Qt.TextFormat.RichText)
         box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        box.setText(CN_PATH_HELP)
+        box.setText(QCoreApplication.translate("PathHelp", CN_PATH_HELP))
         box.exec()
 
     def onButtonScan(self):
@@ -1107,7 +1127,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         _path = self.lineEditConnectionPath.text().strip()
         ok, err = validate_cn_path(_path)
         if not ok:
-            QMessageBox.warning(self, "ControlNet path", f"{err}.\n\nНажмите «?» для справки.")
+            QMessageBox.warning(self, self.tr("ControlNet path"),
+                                f"{err}.\n\n{self.tr('Press \"?\" for help.')}")
             return
         self._stop_workers()
         self.lineEditConnectionPath.setEnabled(False)
@@ -1117,22 +1138,22 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             nodes, paths, identity = scan_cn(_path, p=log.debug)
         except (TimeoutError, CommError) as e:
             log.critical(f"Error Scanning ControlNet (no route to IP address?) {e}")
-            QMessageBox.critical(self, "Error Scanning ControlNet",
-                                 f"Error occurs while scanning ControlNet!\n(no route to IP address?)\n\n"
-                                 f"{e}")
+            QMessageBox.critical(self, self.tr("Error Scanning ControlNet"),
+                                 self.tr("Failed to scan ControlNet!\n(no route to the IP address?)")
+                                 + f"\n\n{e}")
             self._update_run_buttons()
             return
         except RequestError as e:
             log.critical(f"Error Scanning ControlNet (bad connection path?) {e}")
-            QMessageBox.critical(self, "Error Scanning ControlNet",
-                                 f"Error occurs while scanning ControlNet!\n(bad connection path?)\n\n"
-                                 f"{e}")
+            QMessageBox.critical(self, self.tr("Error Scanning ControlNet"),
+                                 self.tr("Failed to scan ControlNet!\n(bad connection path?)")
+                                 + f"\n\n{e}")
             self._update_run_buttons()
             return
         except Exception as e:
             log.exception("Unexpected error while scanning ControlNet")
-            QMessageBox.critical(self, "Error Scanning ControlNet",
-                                 f"Error occurs while scanning ControlNet!\n\n{e}")
+            QMessageBox.critical(self, self.tr("Error Scanning ControlNet"),
+                                 self.tr("Failed to scan ControlNet!") + f"\n\n{e}")
             self._update_run_buttons()
             return
         finally:
@@ -1333,9 +1354,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def on_drop_all(self):
         """Stops polling and clears all data, as if the program was just started."""
-        if self._confirm_on_close and self._site_changed:
-            reply = QMessageBox.question(self, 'Drop all',
-                "Drop all data? Any unsaved changes will be lost.",
+        if self._confirm_on_close and self._has_unsaved_changes():
+            reply = QMessageBox.question(self, self.tr('Drop all'),
+                self.tr("Drop all data? Any unsaved changes will be lost."),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No)
             if reply != QMessageBox.StandardButton.Yes:
@@ -1361,8 +1382,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self._site_loaded = False
         self._site_changed = False
         self._paused = False
-        self.setWindowTitle("ControlNet diagnostic tool")
+        self.setWindowTitle(self.tr("ControlNet diagnostic tool"))
         self.lineEditConnectionPath.clear()
+        self._saved_snapshot = self._snapshot()  # empty baseline after reset
         self.lineEditConnectionPath.setEnabled(True)
         self.pushButtonScan.setEnabled(True)
         self.pushButtonAddMediaConverter.setEnabled(False)
@@ -1374,9 +1396,10 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, event):
         self.save_app_config()
-        if self._confirm_on_close and self._site_changed:
-            reply = QMessageBox.question(self, 'Message',
-                "Are you sure to quit? Any unsaved changes will be lost.", QMessageBox.StandardButton.Yes |
+        if not self._restarting and self._confirm_on_close and self._has_unsaved_changes():
+            reply = QMessageBox.question(self, self.tr('Close the program?'),
+                self.tr("Are you sure to quit? Any unsaved changes will be lost."),
+                QMessageBox.StandardButton.Yes |
                 QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
 
             if reply != QMessageBox.StandardButton.Yes:
@@ -1391,16 +1414,16 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
     def about(self):
         QMessageBox.about(
             self,
-            "About ControlNet Diagnostic Tool",
-            f"<p>Version: {ver.strng}</p>"
-            f"<p>Commit: {ver.commit}</p>"
-            f"<p>By using ControlNet Diagnostic Tool</p>"
-            f"<p>you can significantly improve the troubleshooting speed of ControlNet networks.</p>"
+            self.tr("About ControlNet Diagnostic Tool"),
+            f"<p>{self.tr('Version:')} {ver.strng}</p>"
+            f"<p>{self.tr('Commit:')} {ver.commit}</p>"
+            f"<p>{self.tr('By using ControlNet Diagnostic Tool')}</p>"
+            f"<p>{self.tr('you can significantly improve the troubleshooting speed of ControlNet networks.')}</p>"
             f"<p> - PyQt6</p>"
             f"<p> - Qt Designer6</p>"
             f"<p> - Python3.12</p>"
-            f"<p> Fugue Icons (C) 2013 Yusuke Kamiyamane. All rights reserved.</p>"
-            f"System: {os.name}"
+            f"<p> {self.tr('Fugue Icons (C) 2013 Yusuke Kamiyamane. All rights reserved.')}</p>"
+            f"{self.tr('System:')} {os.name}"
         )
 
     def about_pyqt(self):
@@ -1433,6 +1456,7 @@ if __name__ == "__main__":
         log.info(f"sites dir created {sites_path}")
 
     app = QApplication(sys.argv)
+    _translators = i18n.install_translations(app, i18n.configured_language(Glob_settings))
     app.setWindowIcon(QtGui.QIcon(os.path.join(user_data.asset_dir, 'cn_media.ico')))
 
     win = DiagWindow(app_config_file_path)

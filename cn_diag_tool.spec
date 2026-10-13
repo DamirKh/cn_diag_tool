@@ -35,6 +35,7 @@ a = Analysis(
     datas=[
         (os.path.join(_spec_dir, 'asset'), 'asset'),
         (os.path.join(_spec_dir, 'changelog.txt'), '.'),
+        (os.path.join(_spec_dir, 'translations'), 'translations'),
     ],
     hiddenimports=[],
     hookspath=[],

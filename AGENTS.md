@@ -29,6 +29,22 @@ script rewrites `:/asset/` → `asset:`.
 `tableWidget`, so table behavior (row drag, config persistence, `export_to_excel`) lives in
 `DragTable.py`. The commented-out import in `cn_diag_tool.py:35` is stale — ignore it.
 
+## i18n (translations)
+
+Source strings are **English**; Russian lives in `translations/cn_diag_tool_ru.ts`. A custom
+`i18n.TsTranslator` (`i18n.py`) parses the `.ts` at runtime, so **no `lrelease` is needed**.
+`en` is the default (no catalog). Language is stored in `QSettings` key `Language` and changing it
+restarts the app (`Config → Language`).
+
+- Add/change user-facing strings with `self.tr(...)` / `QCoreApplication.translate("Ctx", "...")`.
+  Log messages are intentionally not translated.
+- UI strings are extracted from `ui/*.ui` (context = form class); `pylupdate6` does **not** see
+  pyuic6's `_translate(...)` alias in the generated `.py`, so never rely on those.
+- `LABELS` is built before the translator exists: wrap its text with `QT_TRANSLATE_NOOP("LABELS", ...)`
+  and translate at the point of use via `tr_label()`.
+- After changing strings run `./translations/update.sh` (runs `pylupdate6`, reports uncovered
+  messages) and fill `translations/cn_diag_tool_ru.ts`.
+
 ## Architecture
 
 - `cn_diag_tool.py` — main window and all UI logic (`DiagWindow`) + `HeaderData`/`LABELS` column schema.

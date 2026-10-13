@@ -40,7 +40,7 @@
       <item>
        <widget class="QPushButton" name="pushButtonPathHelp">
         <property name="toolTip">
-         <string>Справка по формату пути ControlNet</string>
+         <string>Help on the ControlNet path format</string>
         </property>
         <property name="text">
          <string>?</string>
@@ -53,7 +53,7 @@
          <bool>true</bool>
         </property>
         <property name="toolTip">
-         <string>Сканировать сеть ControlNet по указанному пути, найти модули и запустить опрос</string>
+         <string>Scan the ControlNet network at the given path, find modules and start polling</string>
         </property>
         <property name="text">
          <string>Scan CN</string>
@@ -236,7 +236,7 @@
     <string>Table Config</string>
    </property>
    <property name="toolTip">
-    <string>Open Table Congiguration</string>
+    <string>Open Table Configuration</string>
    </property>
   </action>
   <action name="actionSave_as">
@@ -313,7 +313,7 @@
     <string>Drop all</string>
    </property>
    <property name="toolTip">
-    <string>Остановить опрос, очистить таблицу и сбросить загруженный сайт</string>
+    <string>Stop polling, clear the table and reset the loaded site</string>
    </property>
   </action>
  </widget>
