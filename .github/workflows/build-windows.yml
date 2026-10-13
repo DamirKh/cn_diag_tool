@@ -44,7 +44,13 @@ jobs:
             $ver = "$maj.$min"
           }
           $verFile = if ($ver -match '^\d+\.\d+$') { "$ver.0" } else { $ver }
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$ver" "/DMyAppVerFile=$verFile" "installer\cn_tool.iss"
+          $iscc = @(
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe not found in known locations" }
+          & $iscc "/DMyAppVersion=$ver" "/DMyAppVerFile=$verFile" "installer\cn_tool.iss"
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
