@@ -7,9 +7,16 @@ Windows-oriented, single-user, GUI-only. Source strings are largely Russian.
 
 - Install deps: `pip install -r requirements.txt` (Python 3.12; `.venv/` already exists).
 - Run app: `python cn_diag_tool.py` (entrypoint: `DiagWindow` at `cn_diag_tool.py:1119`).
-- Build exe: `pyinstaller cn_diag_tool.spec` (produces `cn_tool`; Windows-targeted).
+- Windows build + installer: `.\build_win.ps1` — PyInstaller `cn_diag_tool.spec` (one-dir `dist/cn_tool/`)
+  then Inno Setup `installer/cn_tool.iss` (needs Inno Setup 6; build deps in `requirements-build.txt`).
+- Raw bundle only: `pip install -r requirements-build.txt; pyinstaller cn_diag_tool.spec`.
 
-There is **no test suite, linter, or CI** in this repo. Do not invent `pytest`/lint commands.
+PyInstaller **cannot cross-compile**: the bundle/installer can only be produced on Windows. CI
+(`.github/workflows/build-windows.yml`) runs on `windows-latest` for `v*` tags and attaches the
+installer to a GitHub Release. The repo's primary remote is a bare git server; nothing is built there.
+To use CI, mirror to GitHub: `git remote add github git@github.com:<owner>/<repo>.git && git push github main --tags`.
+
+There is **no test suite or linter** in this repo. Do not invent `pytest`/lint commands.
 
 ## Generated UI files — regenerate, don't hand-edit
 

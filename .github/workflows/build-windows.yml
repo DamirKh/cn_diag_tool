@@ -1,0 +1,60 @@
+name: build-windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # git describe in cn_diag_tool.spec needs tags/history
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-build.txt
+
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm --clean cn_diag_tool.spec
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}" -replace '^v', ''
+          if ($ver -notmatch '^\d+\.\d+') {
+            $maj = (Select-String -Path ver.py -Pattern '^major\s*=\s*(\d+)').Matches[0].Groups[1].Value
+            $min = (Select-String -Path ver.py -Pattern '^minor\s*=\s*(\d+)').Matches[0].Groups[1].Value
+            $ver = "$maj.$min"
+          }
+          $verFile = if ($ver -match '^\d+\.\d+$') { "$ver.0" } else { $ver }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$ver" "/DMyAppVerFile=$verFile" "installer\cn_tool.iss"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cn_tool-installer
+          path: installer/Output/cn_tool-*-setup.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/Output/cn_tool-*-setup.exe
