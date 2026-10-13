@@ -253,8 +253,8 @@
     </message>
     <message>
       <location filename="../ui/config_helper.ui" line="0" />
-      <source>When closing tab</source>
-      <translation>À la fermeture de l'onglet</translation>
+      <source>When closing window</source>
+      <translation>À la fermeture de la fenêtre</translation>
     </message>
     <message>
       <location filename="../ui/config_helper.ui" line="0" />
@@ -266,8 +266,8 @@
     <name>LABELS</name>
     <message>
       <location filename="../cn_diag_tool.py" line="68" />
-      <source>no.</source>
-      <translation>n°</translation>
+      <source>SN</source>
+      <translation>SN</translation>
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="69" />
@@ -281,18 +281,18 @@
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="74" />
-      <source>Name</source>
-      <translation>Nom</translation>
+      <source>Type</source>
+      <translation>Type</translation>
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="75" />
-      <source>Module name</source>
-      <translation>Nom du module</translation>
+      <source>Module type</source>
+      <translation>Type du module</translation>
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="76" />
-      <source>Module catalog name/number (e.g. 1756-CNB).</source>
-      <translation>Référence/nom du module (ex. 1756-CNB).</translation>
+      <source>Module catalog type/number (e.g. 1756-CNB).</source>
+      <translation>Type/référence du module (ex. 1756-CNB).</translation>
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="80" />

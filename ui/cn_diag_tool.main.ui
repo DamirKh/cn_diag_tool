@@ -39,6 +39,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonPathHelp">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="toolTip">
          <string>Help on the ControlNet path format</string>
         </property>

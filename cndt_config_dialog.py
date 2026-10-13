@@ -12,8 +12,8 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(343, 133)
-        Dialog.setMinimumSize(QtCore.QSize(290, 133))
+        Dialog.resize(424, 148)
+        Dialog.setMinimumSize(QtCore.QSize(424, 133))
         Dialog.setModal(True)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
@@ -54,5 +54,5 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Helper Config"))
         self.label_2.setText(_translate("Dialog", "ms"))
         self.label.setText(_translate("Dialog", "Update timer"))
-        self.label_3.setText(_translate("Dialog", "When closing tab"))
+        self.label_3.setText(_translate("Dialog", "When closing window"))
         self.checkBox.setText(_translate("Dialog", "ask confirmation"))
