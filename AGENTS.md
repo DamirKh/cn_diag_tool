@@ -31,10 +31,12 @@ script rewrites `:/asset/` → `asset:`.
 
 ## i18n (translations)
 
-Source strings are **English**; Russian lives in `translations/cn_diag_tool_ru.ts`. A custom
-`i18n.TsTranslator` (`i18n.py`) parses the `.ts` at runtime, so **no `lrelease` is needed**.
-`en` is the default (no catalog). Language is stored in `QSettings` key `Language` and changing it
-restarts the app (`Config → Language`).
+Source strings are **English**; translations live in `translations/cn_diag_tool_<lang>.ts`
+(currently `ru` and `fr`). A custom `i18n.TsTranslator` (`i18n.py`) parses the `.ts` at runtime, so
+**no `lrelease` is needed**. `en` is the default (no catalog). Language is stored in `QSettings` key
+`Language` and changing it restarts the app (`Config → Language`). See `translations/README.md` for
+how to add a language (register the code in `i18n.LANGUAGES`, run `./translations/update.sh <lang>`,
+fill the catalog).
 
 - Add/change user-facing strings with `self.tr(...)` / `QCoreApplication.translate("Ctx", "...")`.
   Log messages are intentionally not translated.

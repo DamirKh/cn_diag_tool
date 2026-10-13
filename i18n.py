@@ -14,6 +14,7 @@ from PyQt6.QtCore import QTranslator, QLocale, QLibraryInfo
 LANGUAGES = {
     'en': 'English',
     'ru': 'Русский',
+    'fr': 'Français',
 }
 DEFAULT_LANGUAGE = 'en'
 
