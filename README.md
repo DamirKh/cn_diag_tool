@@ -19,7 +19,7 @@ but the app also runs on Linux/macOS. The UI is available in English/Russian/Fre
 - **LED states**: channels A/B, active channel, redundancy loss.
 - **Module identity**: serial number (`SN`), type (`Type`), revision (`Rev`).
 - **Bad-frame cross table** showing the number of "complaints" of each node against the others.
-- **Media converters** (`=/=`) as separate rows with free-text "number".
+- **Media converters** (`=/=`) as separate rows with free-text "SN".
 - **Sites** — save/load the network layout and module data as JSON (row order, serials, names/types,
   revisions, media converters).
 - **Export to Excel**, reset counters, acknowledge changes.
@@ -43,6 +43,33 @@ python cn_diag_tool.py
 
 User data (settings, sites, table layout) is stored in `%APPDATA%/CN_diag_tool` (Windows) or
 `~/.config/CN_diag_tool` (Linux/macOS).
+
+## Development workflow
+
+- **UI layouts** live in `ui/*.ui`. Open them with **Qt Designer**, edit and save.
+- After changing a `.ui`, regenerate the Python UI modules:
+  ```bash
+  ./rebuild_ui.sh
+  ```
+  It runs `pyuic6` and writes `cn_diag_tool_ui.py`, `floating_table_ui.py`,
+  `cndt_config_dialog.py` (using `./tmp/` for intermediates). Never hand-edit the generated
+  `*_ui.py` files.
+- **User-facing strings** are English. Wrap them with `self.tr(...)` or
+  `QCoreApplication.translate("Ctx", ...)`; for `LABELS` use `QT_TRANSLATE_NOOP("LABELS", ...)`.
+  After changing strings run `./translations/update.sh` and translate the resulting `.ts`
+  (Qt Linguist or any text editor).
+- Run the app while developing: `python cn_diag_tool.py`.
+- There is **no test suite or linter** configured in this repo.
+
+### Release
+
+1. bump `ver.py` (`major`/`minor`) and add a `changelog.txt` entry;
+2. commit and merge the work into `main`;
+3. push a `v*` tag — CI builds the Windows installer and attaches it to a GitHub Release:
+   ```bash
+   git tag -a v1.3 -m v1.3
+   git push github v1.3
+   ```
 
 ## Build for Windows
 

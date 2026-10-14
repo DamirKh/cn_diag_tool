@@ -153,7 +153,7 @@
      <x>0</x>
      <y>0</y>
      <width>1088</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConfig">
@@ -165,11 +165,11 @@
     <addaction name="actionSave_as"/>
     <addaction name="actionShow_CrossTable"/>
     <addaction name="actionOpen_config_folder"/>
-     <addaction name="actionShow_log"/>
-     <addaction name="actionExport_to_Excel"/>
-     <addaction name="actionDrop_all"/>
-    </widget>
-    <widget class="QMenu" name="menuConfig_2">
+    <addaction name="actionShow_log"/>
+    <addaction name="actionExport_to_Excel"/>
+    <addaction name="actionDrop_all"/>
+   </widget>
+   <widget class="QMenu" name="menuConfig_2">
     <property name="title">
      <string>Config</string>
     </property>
@@ -246,7 +246,7 @@
   </action>
   <action name="actionShow_log">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/script-text.png</normaloff>:/asset/script-text.png</iconset>
    </property>
    <property name="text">
@@ -255,7 +255,7 @@
   </action>
   <action name="actionShow_CrossTable">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/table.png</normaloff>:/asset/table.png</iconset>
    </property>
    <property name="text">
@@ -264,7 +264,7 @@
   </action>
   <action name="actionTable_Config">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/equalizer--pencil.png</normaloff>:/asset/equalizer--pencil.png</iconset>
    </property>
    <property name="text">
@@ -285,7 +285,7 @@
   </action>
   <action name="actionLoad_site">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/drive-upload.png</normaloff>:/asset/drive-upload.png</iconset>
    </property>
    <property name="text">
@@ -294,7 +294,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/question-button.png</normaloff>:/asset/question-button.png</iconset>
    </property>
    <property name="text">
@@ -303,7 +303,7 @@
   </action>
   <action name="actionExport_to_Excel">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/report-excel.png</normaloff>:/asset/report-excel.png</iconset>
    </property>
    <property name="text">
@@ -315,7 +315,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/counter-reset.png</normaloff>:/asset/counter-reset.png</iconset>
    </property>
    <property name="text">
@@ -324,7 +324,7 @@
   </action>
   <action name="actionChangelog">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/information-button.png</normaloff>:/asset/information-button.png</iconset>
    </property>
    <property name="text">
@@ -333,7 +333,7 @@
   </action>
   <action name="actionAck">
    <property name="icon">
-    <iconset resource="../cn_diag_tool/asset/asset.qrc">
+    <iconset resource="../asset/asset.qrc">
      <normaloff>:/asset/exclamation-circle.png</normaloff>:/asset/exclamation-circle.png</iconset>
    </property>
    <property name="text">
@@ -360,7 +360,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../cn_diag_tool/asset/asset.qrc"/>
+  <include location="../asset/asset.qrc"/>
  </resources>
  <connections>
   <connection>
