@@ -17,7 +17,9 @@ installer to a GitHub Release. The repo's primary remote is a bare git server; n
 To use CI, mirror to GitHub: `git remote add github git@github.com:<owner>/<repo>.git && git push github main --tags`.
 
 Tests: `python -m unittest discover -s tests -v` (stdlib `unittest`, no `pytest`). There is no linter
-configured. Counter rate/average math is covered in `tests/test_counter_math.py`.
+configured. Counter rate/average math is covered in `tests/test_counter_math.py`; the Excel report
+builder and the remembered export directory are covered in `tests/test_excel_export.py` and
+`tests/test_export_paths.py`.
 
 ## Generated UI files — regenerate, don't hand-edit
 
@@ -27,8 +29,10 @@ never hand-edit the generated `.py`. Icons use the `asset:` scheme (not Qt resou
 script rewrites `:/asset/` → `asset:`.
 
 `cn_diag_tool_ui.py` imports and instantiates `DragTable.DraggableTableWidget` as the main
-`tableWidget`, so table behavior (row drag, config persistence, `export_to_excel`) lives in
-`DragTable.py`. The commented-out import in `cn_diag_tool.py:35` is stale — ignore it.
+`tableWidget`, so table behavior (row drag, config persistence) lives in `DragTable.py`;
+`export_data` snapshots the table there, while `DiagWindow` assembles the report (column selection,
+optional cross table, metadata) and the Qt-free `excel_export.py` writes it.
+The commented-out import in `cn_diag_tool.py:35` is stale — ignore it.
 
 ## i18n (translations)
 
@@ -54,6 +58,8 @@ fill the catalog).
 - `Plc_connection_worker.py` — `PLCConnectionWorker`, one `QThread` per CN node; polls CIP counters/LEDs, emits Qt signals.
 - `cn_lib.py` — `scan_cn()` scans CN node numbers `0..99` at a CIP path for modules.
 - `cip_request.py` — `pycomm3` CIP message definitions and `Struct` decoders (counter/LED/identity layouts).
+- `excel_export.py` — Qt-free XLSX report builder (metadata block, typed cells, styling, LED legend).
+- `export_paths.py` — remembers the last Excel export directory (QSettings), defaulting to `<config>/sites`.
 - `ver.py` — version from `major.minor` plus `git describe`; fallback to generated `_build_info.py`.
 
 An unrelated tag read/write tab (`form_tab_widget.py`, `form_tab2_widget_ui.py`) was removed as a

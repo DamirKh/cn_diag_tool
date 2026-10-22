@@ -13,13 +13,15 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QCoreApplication, QT_TRANSLATE_
 from PyQt6.QtCore import QSettings
 from PyQt6.QtGui import QCursor, QColor, QBrush, QFont
 from PyQt6 import QtWidgets, QtCore, QtGui
-from PyQt6.QtWidgets import QMainWindow, QApplication, QProgressDialog, QVBoxLayout, QMessageBox, QLabel, QDialog, \
+from PyQt6.QtWidgets import QMainWindow, QApplication, QProgressDialog, QVBoxLayout, QHBoxLayout, QMessageBox, QLabel, QDialog, \
     QWidget, QTableWidgetItem, QTableWidget, QGridLayout, QGroupBox, QCheckBox, QLineEdit, QDialogButtonBox, \
-    QHeaderView, QFileDialog, QButtonGroup
+    QHeaderView, QFileDialog, QButtonGroup, QPushButton
 
 import user_data
 import ver
 import i18n
+import excel_export
+import export_paths
 
 #https://stackoverflow.com/a/66104687/8124158
 QtCore.QDir.addSearchPath('asset', user_data.asset_dir)
@@ -302,6 +304,17 @@ def data_item(sid: str, text: str) -> QTableWidgetItem:
     item = QTableWidgetItem(text)
     item.setTextAlignment(alignment_for_sid(sid))
     return item
+
+
+def column_kind(sid: str) -> str:
+    """Maps a column id to the value type used by the Excel export."""
+    if sid in TEXT_SIDS:
+        return excel_export.TEXT
+    if sid.endswith('_avg'):
+        return excel_export.FLOAT
+    if sid in ('LED_A', 'LED_B'):
+        return excel_export.LED
+    return excel_export.INT
 
 
 def tr_label(text: str) -> str:
@@ -600,6 +613,82 @@ class HelperConfigDialog(QDialog, Ui_Dialog):
         self.spinBox.valueChanged.connect(self._callback)
 
 
+class ExportDialog(QDialog):
+    def __init__(self, parent=None, title="", default_path=""):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setModal(True)
+
+        layout = QVBoxLayout(self)
+        path_layout = QHBoxLayout()
+        self.path_edit = QLineEdit(default_path, self)
+        browse_button = QPushButton("...", self)
+        browse_button.clicked.connect(self._browse)
+        path_layout.addWidget(self.path_edit)
+        path_layout.addWidget(browse_button)
+        layout.addLayout(path_layout)
+
+        self.full_columns_check = QCheckBox(self.tr("Full column set"), self)
+        self.cross_table_check = QCheckBox(self.tr("Add cross table"), self)
+        layout.addWidget(self.full_columns_check)
+        layout.addWidget(self.cross_table_check)
+
+        self.buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
+            parent=self)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+        self._browse_confirmed = False
+        self.path_edit.textChanged.connect(self._on_text_changed)
+        self._on_text_changed(default_path)
+
+    def _on_text_changed(self, text):
+        self._browse_confirmed = False
+        ok_button = self.buttons.button(QDialogButtonBox.StandardButton.Ok)
+        if ok_button:
+            ok_button.setEnabled(bool(text.strip()))
+
+    def _browse(self):
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            self.windowTitle(),
+            self.path_edit.text(),
+            QCoreApplication.translate("DiagWindow", "XLSX Files (*.xlsx);;All Files (*)"),
+        )
+        if filename:
+            exists = os.path.exists(filename)
+            self.path_edit.setText(filename)
+            self._browse_confirmed = exists
+
+    def accept(self):
+        if not self.path_edit.text().strip():
+            return
+        filename = self.filename()
+        if os.path.exists(filename) and not self._browse_confirmed:
+            reply = QMessageBox.question(
+                self, self.windowTitle(),
+                self.tr("File already exists. Overwrite?"),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        super().accept()
+
+    def filename(self):
+        filename = os.path.expanduser(self.path_edit.text().strip())
+        if not filename.lower().endswith(".xlsx"):
+            filename += ".xlsx"
+        return filename
+
+    def full_columns(self):
+        return self.full_columns_check.isChecked()
+
+    def add_cross_table(self):
+        return self.cross_table_check.isChecked()
+
+
 class DiagWindow(QMainWindow, Ui_MainWindow):
     labels = [l.sid for l in LABELS]
 
@@ -863,6 +952,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         if filename:  # Check if the user selected a file
             self.load_site_config(site_conf_filename=filename)
             self.config_file_path = filename  # update path in-place for future 'save' calls
+            export_paths.reset(Glob_settings)
 
     def on_connection_lost(self, text_error: str):
         log.error(f"Lost connection {text_error}")
@@ -974,26 +1064,135 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         log.debug('Hit show crosstable')
         self.MyCrossTable.show()
 
-    def export_to(self):
-        if len(self._workers):
-            filename, _ = QFileDialog.getSaveFileName(
-                self,
-                self.tr("Export data to..."),
-                "",  # Default directory (empty string for user's home directory)
-                self.tr("XLSX Files (*.xlsx);;All Files (*)"),  # Filter
-            )
+    def _export_column_spec(self, logical):
+        table = self.tableWidget
+        item = table.horizontalHeaderItem(logical)
+        data = item.data(My_ROLE) if item else None
+        sid = data.sid if data else ''
+        return excel_export.ColumnSpec(
+            header=item.text() if item else '',
+            hint=tr_label(data.hint) if data and data.hint else '',
+            longread=tr_label(data.longread) if data and data.longread else '',
+            kind=column_kind(sid),
+            logical_index=logical,
+        )
 
-            if filename:  # Check if the user selected a file
-                if not filename.lower().endswith(".xlsx"):
-                    filename += ".xlsx"  # Add .xlsx extension if not present
-                if self.tableWidget.export_to_excel(filename=filename):  # if success
-                    QMessageBox.information(self, self.tr("Success Exporting Data"),
-                                         self.tr("Data exported to") + f" {filename}")
-                    pass
-                else:
-                    QMessageBox.critical(self, self.tr("Error Exporting Data"),
-                                         self.tr("Could not export data to") + f" {filename}:\n"
-                                         + self.tr("See log window for details"))
+    def _export_columns(self, full_set=False):
+        """Builds column descriptors: all in standard order, or visible in screen order."""
+        table = self.tableWidget
+        if full_set:
+            logicals = range(table.columnCount())
+        else:
+            header = table.horizontalHeader()
+            logicals = (
+                header.logicalIndex(visual)
+                for visual in range(table.columnCount())
+                if not table.isColumnHidden(header.logicalIndex(visual))
+            )
+        return [self._export_column_spec(logical) for logical in logicals]
+
+    def _cross_table_export(self, main_labels):
+        """Returns cross-table columns and per-row values (aligned with main rows)."""
+        cross = self.MyCrossTable.tableWidget
+        if cross.rowCount() == 0 or cross.columnCount() == 0:
+            return [], [[] for _ in main_labels]
+        cross_labels = []
+        for row in range(cross.rowCount()):
+            item = cross.verticalHeaderItem(row)
+            cross_labels.append(item.text() if item else '')
+        row_map = excel_export.map_cross_rows(main_labels, cross_labels)
+        columns = []
+        for col in range(cross.columnCount()):
+            item = cross.horizontalHeaderItem(col)
+            columns.append(excel_export.ColumnSpec(
+                header=item.text() if item else '',
+                kind=excel_export.INT,
+                header_fill=excel_export.CROSS_HEADER_COLOR,
+            ))
+        values = []
+        for row in row_map:
+            row_values = []
+            for col in range(cross.columnCount()):
+                item = cross.item(row, col) if row is not None else None
+                row_values.append(excel_export.parse_cell(excel_export.INT, item.text() if item else ''))
+            values.append(row_values)
+        return columns, values
+
+    def _export_metadata(self):
+        """Collects the report header lines (site, path, time, version, nodes)."""
+        metadata = [
+            (self.tr("Version"), ver.strng),
+            (self.tr("Exported"), datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+            (self.tr("ControlNet path"), self.lineEditConnectionPath.text().strip()),
+        ]
+        if self._config_file_path:
+            metadata.append((self.tr("Site"), os.path.basename(self._config_file_path)))
+        nodes = sum(
+            1 for row in range(self.tableWidget.rowCount())
+            if (item := self.tableWidget.verticalHeaderItem(row)) and item.text() != MEDIA_CONVERTER
+        )
+        metadata.append((self.tr("Nodes"), str(nodes)))
+        return metadata
+
+    def _export_legend(self, columns):
+        """Builds the LED state legend from the LED columns, if present."""
+        led_columns = [column for column in columns if column.kind == excel_export.LED]
+        if not led_columns:
+            return None
+        legend = []
+        for column in led_columns:
+            heading = f"{column.header} — {column.hint}" if column.header and column.hint else (column.header or column.hint)
+            legend.append((heading, column.longread.splitlines()))
+        return legend
+
+    def _default_export_dir(self):
+        directory = export_paths.default_dir(user_data.get_user_data_path())
+        try:
+            os.makedirs(directory, exist_ok=True)
+        except OSError:
+            pass
+        return directory
+
+    def _export_default_path(self):
+        directory = export_paths.current_dir(Glob_settings, self._default_export_dir())
+        return os.path.join(directory, "export.xlsx")
+
+    def export_to(self):
+        if not len(self._workers):
+            return
+        default_path = self._export_default_path()
+        dialog = ExportDialog(self, title=self.tr("Export data to..."), default_path=default_path)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        filename = dialog.filename()
+        export_paths.remember(Glob_settings, filename)
+        columns = self._export_columns(full_set=dialog.full_columns())
+        rows = self.tableWidget.export_data(columns)
+        if dialog.add_cross_table():
+            cross_columns, cross_values = self._cross_table_export([label for label, _ in rows])
+            columns += cross_columns
+            rows = [(label, values + extra) for (label, values), extra in zip(rows, cross_values)]
+        try:
+            excel_export.write_xlsx(
+                filename,
+                columns,
+                rows,
+                self._export_metadata(),
+                title=self.tr("ControlNet diagnostic tool"),
+                corner_label=self.tr("Node"),
+                sheet_name=self.tr("Diagnostics"),
+                legend=self._export_legend(columns),
+                legend_sheet_name=self.tr("LED states"),
+                legend_title=self.tr("LED state legend"),
+            )
+        except Exception as e:
+            log.error(f"Error exporting to Excel: {e}")
+            QMessageBox.critical(self, self.tr("Error Exporting Data"),
+                                 self.tr("Could not export data to") + f" {filename}:\n"
+                                 + self.tr("See log window for details"))
+            return
+        QMessageBox.information(self, self.tr("Success Exporting Data"),
+                                self.tr("Data exported to") + f" {filename}")
 
     def add_media_converter(self):
         cn_media_converter_item = QTableWidgetItem(MEDIA_CONVERTER)
@@ -1423,6 +1622,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
         # site / connection state
         self._config_file_path = None
+        export_paths.reset(Glob_settings)
         self._site_loaded = False
         self._site_changed = False
         self._paused = False
