@@ -15,7 +15,8 @@ configure_default_logger(logging.WARNING)
 
 
 class PLCConnectionWorkerSignals(QObject):
-    read_done = pyqtSignal(int, dict)
+    counters_read_done = pyqtSignal(int, dict)
+    leds_read_done = pyqtSignal(int, dict)
     connection_lost = pyqtSignal(int, str)
     non_fatal_error = pyqtSignal(int, str)
 
@@ -171,7 +172,7 @@ class PLCConnectionWorker(QThread):
                                 counters_with_rates = self._compute_rates(counters, current_timestamp, time_delta)
                                 counters_with_rates['reply_time'] = int(reply_time * 1_000_000)
 
-                                self.signals.read_done.emit(self.node_num, counters_with_rates)
+                                self.signals.counters_read_done.emit(self.node_num, counters_with_rates)
 
                                 self._previous_counters = counters.copy()
                                 self._previous_timestamp = current_timestamp
@@ -182,7 +183,7 @@ class PLCConnectionWorker(QThread):
                                 self.signals.non_fatal_error.emit(self.node_num, str(CN_LED_states_raw.error))
                             else:
                                 leds = cip_request.ControlNetLED.decode(CN_LED_states_raw.value)
-                                self.signals.read_done.emit(self.node_num, leds)
+                                self.signals.leds_read_done.emit(self.node_num, leds)
 
                         except (ResponseError, RequestError) as e:
                             self.signals.non_fatal_error.emit(self.node_num, str(e))

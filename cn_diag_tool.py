@@ -1130,10 +1130,11 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         for worker in workers:
             if not worker.wait(timeout_ms):
                 log.warning(f'Worker [{worker.node_num:02}] did not stop within {timeout_ms} ms; deferring cleanup')
-                try:
-                    worker.signals.read_done.disconnect()
-                except (TypeError, RuntimeError):
-                    pass
+                for signal in (worker.signals.counters_read_done, worker.signals.leds_read_done):
+                    try:
+                        signal.disconnect()
+                    except (TypeError, RuntimeError):
+                        pass
                 self._retired_workers.append(worker)
         self._retired_workers = [worker for worker in self._retired_workers if not worker.isFinished()]
 
@@ -1229,8 +1230,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
             cn_node_worker = PLCConnectionWorker(node_num)
             cn_node_worker.path = cn_path
-            cn_node_worker.signals.read_done.connect(self.update_diag_data)
-            cn_node_worker.signals.read_done.connect(self.MyCrossTable.update_diag_data)
+            cn_node_worker.signals.counters_read_done.connect(self.update_diag_data)
+            cn_node_worker.signals.counters_read_done.connect(self.MyCrossTable.update_diag_data)
+            cn_node_worker.signals.leds_read_done.connect(self.update_diag_data)
             cn_node_worker.start()
             self._workers[node_num] = cn_node_worker
 
