@@ -24,3 +24,8 @@
      Media converter rows can be removed
      Numeric cells are right-aligned
      Unsaved changes are detected on exit
+1.3 Average frame-rate columns (⇑ avg / ⇓ avg), two decimals
+     Counter wrap and reset handling in rate/average math
+     Reset Counters restarts the averaging baseline
+     Fix Bad Frame Intersection table clearing itself on every LED poll
+     Unit tests for the counter math
