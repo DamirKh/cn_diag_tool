@@ -16,7 +16,8 @@ PyInstaller **cannot cross-compile**: the bundle/installer can only be produced 
 installer to a GitHub Release. The repo's primary remote is a bare git server; nothing is built there.
 To use CI, mirror to GitHub: `git remote add github git@github.com:<owner>/<repo>.git && git push github main --tags`.
 
-There is **no test suite or linter** in this repo. Do not invent `pytest`/lint commands.
+Tests: `python -m unittest discover -s tests -v` (stdlib `unittest`, no `pytest`). There is no linter
+configured. Counter rate/average math is covered in `tests/test_counter_math.py`.
 
 ## Generated UI files — regenerate, don't hand-edit
 

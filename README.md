@@ -59,7 +59,10 @@ User data (settings, sites, table layout) is stored in `%APPDATA%/CN_diag_tool` 
   After changing strings run `./translations/update.sh` and translate the resulting `.ts`
   (Qt Linguist or any text editor).
 - Run the app while developing: `python cn_diag_tool.py`.
-- There is **no test suite or linter** configured in this repo.
+- Run the tests (stdlib `unittest`, no `pytest`):
+  ```bash
+  python -m unittest discover -s tests -v
+  ```
 
 ### Release
 

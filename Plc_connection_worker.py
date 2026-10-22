@@ -25,6 +25,9 @@ class PLCConnectionWorker(QThread):
         'good_frames_transmitted',
         'good_frames_received',
     ]
+    # Generous upper bound of frames per second for a single node. Used to tell a
+    # genuine counter wrap (add modulus) from a counter reset (do not add it).
+    max_frames_per_second = 10000
     def __init__(self, node_num: int, parent=None):  # Add parent for proper cleanup
         super().__init__(parent)
         self.node_num = node_num
@@ -39,6 +42,9 @@ class PLCConnectionWorker(QThread):
 
         self._previous_counters = {}  # Store previous counter values
         self._previous_timestamp = time.monotonic()  # Initialize previous timestamp
+        # average rate since the scan started (for the 24-bit good-frame counters)
+        self._avg_started = None
+        self._avg_totals = {}
 
     @property
     def path(self):
@@ -62,6 +68,68 @@ class PLCConnectionWorker(QThread):
         self.cn_counters = new_counters.copy()  # Thread-safe copy
         self._mutex.unlock()
 
+    def _corrected_increment(self, key, previous, value, time_delta):
+        """Returns the growth of a counter between two samples.
+
+        A decrease is not necessarily a wrap: the counter may be narrower than its
+        field (e.g. 16-bit) or may genuinely reset to 0.  We therefore try the
+        plausible moduli (2**24/2**16/2**8 for the good-frame counters, 2**8 for
+        the rest), accept one only if the previous value was close enough to the
+        modulus and the resulting increment is physically plausible, and otherwise
+        treat the event as a reset (the new value is the count since the reset).
+        """
+        raw = value - previous
+        if raw >= 0:
+            return raw
+
+        cap = self.max_frames_per_second * max(time_delta, 0.001)
+        moduli = (2**24, 2**16, 2**8) if key in self.tree_byte_counters else (2**8,)
+        candidates = []
+        for modulus in moduli:
+            increment = raw + modulus
+            if 0 <= increment <= cap and previous >= modulus - cap:
+                candidates.append(increment)
+        if candidates:
+            return min(candidates)
+        # counter reset: the current value is what has accumulated since the reset
+        return max(value, 0)
+
+    def _compute_rates(self, counters, current_timestamp, time_delta):
+        """Returns counters enriched with per-second rates and averages since start.
+
+        Averages are computed from the sum of corrected increments divided by the
+        elapsed time since the first sample, so they are safe across counter
+        wraps and resets.
+        """
+        result = counters.copy()
+        for key, value in counters.items():
+            if key.startswith('#'):
+                continue  # do not calculate per_sec for log entries
+            try:
+                increment = self._corrected_increment(
+                    key, self._previous_counters.get(key, value), value, time_delta)
+                rate = increment / time_delta if time_delta > 0 else 0
+                result[key + "/s"] = int(rate)
+                if key in self.tree_byte_counters:
+                    self._avg_totals[key] = self._avg_totals.get(key, 0) + increment
+            except TypeError:  # counter value is not numeric
+                result[key + "/s"] = "N/A"
+
+        if self._avg_started is None:
+            self._avg_started = current_timestamp
+        else:
+            elapsed = current_timestamp - self._avg_started
+            if elapsed > 0:
+                for key in self.tree_byte_counters:
+                    result[key + "_avg"] = self._avg_totals.get(key, 0) / elapsed
+        return result
+
+    def _reset_average(self):
+        """Starts a new averaging baseline (called after the module counters reset)."""
+        self._avg_totals = {}
+        self._avg_started = None
+        self._previous_counters = {}
+
     def run(self):
         self._stop_event = False
         self._reset_counters_event = False
@@ -71,7 +139,8 @@ class PLCConnectionWorker(QThread):
                     start_time = time.monotonic()  # Use monotonic time for accurate timing
                     if not self._pause:
                         try:
-                            if self._reset_counters_event:
+                            is_reset = self._reset_counters_event
+                            if is_reset:
                                 req = cip_request.cn_diag_counters_reset
                                 self._reset_counters_event = False
                             else:
@@ -84,11 +153,11 @@ class PLCConnectionWorker(QThread):
                             else:
                                 reply_time = time.monotonic() - start_time
                                 counters = cip_request.ControlNetCounters.decode(CN_counters_raw.value)
+                                if is_reset:
+                                    self._reset_average()  # new baseline for "average since start"
                                 # self.update_cn_counters(counters)
                                 current_timestamp = time.monotonic()
                                 time_delta = current_timestamp - self._previous_timestamp
-
-                                counters_with_rates = counters.copy()  # Create a copy to avoid modifying original data
 
                                 # # error emulation for debug
                                 # counters_with_rates['#err_0'] = 8
@@ -99,22 +168,8 @@ class PLCConnectionWorker(QThread):
                                 # counters_with_rates['#err_5'] = 7
                                 # # end of error emulation
 
+                                counters_with_rates = self._compute_rates(counters, current_timestamp, time_delta)
                                 counters_with_rates['reply_time'] = int(reply_time * 1_000_000)
-
-                                for key, value in counters.items():
-                                    if key.startswith('#'):
-                                        continue  # do not calculate per_sec for counters starts with #
-                                    try:
-                                        increment = value - self._previous_counters.get(key,
-                                                                                        value)  # Handle missing previous value
-                                        rate = increment / time_delta if time_delta > 0 else 0  # Avoid division by zero
-                                        if rate < 0:  # counter overloaded
-                                            if key not in PLCConnectionWorker.tree_byte_counters:
-                                                rate += 2**8
-                                        counters_with_rates[key + "/s"] = int(rate)  # Add increment per second
-
-                                    except TypeError:  # Handle cases where counter values are not numeric
-                                        counters_with_rates[key + "/s"] = "N/A"
 
                                 self.signals.read_done.emit(self.node_num, counters_with_rates)
 

@@ -59,7 +59,10 @@ python cn_diag_tool.py
   После правки строк выполните `./translations/update.sh` и переведите полученный `.ts`
   (Qt Linguist или любой текстовый редактор).
 - Запуск приложения при разработке: `python cn_diag_tool.py`.
-- В репозитории **нет тестов и линтера**.
+- Тесты (stdlib `unittest`, без `pytest`):
+  ```bash
+  python -m unittest discover -s tests -v
+  ```
 
 ### Релиз
 

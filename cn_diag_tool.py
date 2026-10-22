@@ -150,6 +150,11 @@ LABELS = [
                hint=QT_TRANSLATE_NOOP("LABELS", "Transmitted frames/s"),
                longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the good-transmit counter over the last second."),
                ),
+    HeaderData('good_frames_transmitted_avg',
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇑ avg"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Average TX/s since scan start"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Average number of successfully transmitted frames per second since the scan started.\nThe 24-bit counter wrap is taken into account."),
+               ),
     HeaderData('aborted_frame_transmitted',
                comment=QT_TRANSLATE_NOOP("LABELS", "⇞"),
                hint=QT_TRANSLATE_NOOP("LABELS", "Transmit abort"),
@@ -165,6 +170,11 @@ LABELS = [
                comment=QT_TRANSLATE_NOOP("LABELS", "⇓/s"),
                hint=QT_TRANSLATE_NOOP("LABELS", "Received frames/s"),
                longread=QT_TRANSLATE_NOOP("LABELS", "Increment of the good-receive counter over the last second."),
+               ),
+    HeaderData('good_frames_received_avg',
+               comment=QT_TRANSLATE_NOOP("LABELS", "⇓ avg"),
+               hint=QT_TRANSLATE_NOOP("LABELS", "Average RX/s since scan start"),
+               longread=QT_TRANSLATE_NOOP("LABELS", "Average number of successfully received frames per second since the scan started.\nThe 24-bit counter wrap is taken into account."),
                ),
     HeaderData('aborted_frames_received',
                comment=QT_TRANSLATE_NOOP("LABELS", "⇟"),
@@ -1366,7 +1376,10 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                         continue
 
                     try:
-                        str_value = str(value)
+                        if key.endswith('_avg'):
+                            str_value = f"{float(value):.2f}"
+                        else:
+                            str_value = str(value)
                     except (TypeError, ValueError) as e:
                         str_value = f"Error: {e}"
                     item = self.tableWidget.item(row, col)

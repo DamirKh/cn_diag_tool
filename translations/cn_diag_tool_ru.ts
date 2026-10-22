@@ -4,27 +4,27 @@
   <context>
     <name>ConfigureDialog</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="372" />
+      <location filename="../cn_diag_tool.py" line="382" />
       <source>Configure Data View</source>
       <translation>Настройка вида данных</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="378" />
+      <location filename="../cn_diag_tool.py" line="388" />
       <source>Column Name</source>
       <translation>Колонка</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="378" />
+      <location filename="../cn_diag_tool.py" line="388" />
       <source>Description</source>
       <translation>Описание</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="378" />
+      <location filename="../cn_diag_tool.py" line="388" />
       <source>Visibility</source>
       <translation>Видимость</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="408" />
+      <location filename="../cn_diag_tool.py" line="418" />
       <source>Error</source>
       <translation>Ошибка</translation>
     </message>
@@ -32,7 +32,7 @@
   <context>
     <name>CrossTableDialog</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="477" />
+      <location filename="../cn_diag_tool.py" line="487" />
       <source>Bad Frame Cross Table</source>
       <translation>Таблица ошибок ControlNet</translation>
     </message>
@@ -40,191 +40,191 @@
   <context>
     <name>DiagWindow</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="1414" />
-      <location filename="../cn_diag_tool.py" line="658" />
+      <location filename="../cn_diag_tool.py" line="1424" />
+      <location filename="../cn_diag_tool.py" line="668" />
       <source>ControlNet diagnostic tool</source>
       <translation>Диагностика ControlNet</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="719" />
+      <location filename="../cn_diag_tool.py" line="729" />
       <source>Error Saving Configuration</source>
       <translation>Ошибка сохранения конфигурации</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="720" />
+      <location filename="../cn_diag_tool.py" line="730" />
       <source>Could not save configuration to</source>
       <translation>Не удалось сохранить конфигурацию в</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="759" />
+      <location filename="../cn_diag_tool.py" line="769" />
       <source>Save Site Configuration As...</source>
       <translation>Сохранить сайт как...</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="850" />
-      <location filename="../cn_diag_tool.py" line="761" />
+      <location filename="../cn_diag_tool.py" line="860" />
+      <location filename="../cn_diag_tool.py" line="771" />
       <source>JSON Files (*.json);;All Files (*)</source>
       <translation>Файлы JSON (*.json);;Все файлы (*)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="848" />
+      <location filename="../cn_diag_tool.py" line="858" />
       <source>Load Site Configuration From...</source>
       <translation>Загрузить сайт из...</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="859" />
+      <location filename="../cn_diag_tool.py" line="869" />
       <source>Connection to PLC lost</source>
       <translation>Потеря связи с ПЛК</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="898" />
+      <location filename="../cn_diag_tool.py" line="908" />
       <source>Language</source>
       <translation>Язык</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="937" />
+      <location filename="../cn_diag_tool.py" line="947" />
       <source>Changelog</source>
       <translation>История изменений</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="971" />
+      <location filename="../cn_diag_tool.py" line="981" />
       <source>Export data to...</source>
       <translation>Экспорт данных в...</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="973" />
+      <location filename="../cn_diag_tool.py" line="983" />
       <source>XLSX Files (*.xlsx);;All Files (*)</source>
       <translation>Файлы XLSX (*.xlsx);;Все файлы (*)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="980" />
+      <location filename="../cn_diag_tool.py" line="990" />
       <source>Success Exporting Data</source>
       <translation>Экспорт выполнен</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="981" />
+      <location filename="../cn_diag_tool.py" line="991" />
       <source>Data exported to</source>
       <translation>Данные экспортированы в</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="984" />
+      <location filename="../cn_diag_tool.py" line="994" />
       <source>Error Exporting Data</source>
       <translation>Ошибка экспорта данных</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="985" />
+      <location filename="../cn_diag_tool.py" line="995" />
       <source>Could not export data to</source>
       <translation>Не удалось экспортировать данные в</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="986" />
+      <location filename="../cn_diag_tool.py" line="996" />
       <source>See log window for details</source>
       <translation>Подробности в окне лога</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1039" />
+      <location filename="../cn_diag_tool.py" line="1049" />
       <source>Error</source>
       <translation>Ошибка</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1040" />
+      <location filename="../cn_diag_tool.py" line="1050" />
       <source>Unsupported platform:</source>
       <translation>Неподдерживаемая платформа:</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1139" />
+      <location filename="../cn_diag_tool.py" line="1149" />
       <source>Path format is valid</source>
       <translation>Формат пути корректен</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1159" />
-      <location filename="../cn_diag_tool.py" line="1147" />
+      <location filename="../cn_diag_tool.py" line="1169" />
+      <location filename="../cn_diag_tool.py" line="1157" />
       <source>ControlNet path</source>
       <translation>Путь ControlNet</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1160" />
+      <location filename="../cn_diag_tool.py" line="1170" />
       <source>Press "?" for help.</source>
       <translation>Нажмите «?» для справки.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1184" />
-      <location filename="../cn_diag_tool.py" line="1177" />
-      <location filename="../cn_diag_tool.py" line="1170" />
+      <location filename="../cn_diag_tool.py" line="1194" />
+      <location filename="../cn_diag_tool.py" line="1187" />
+      <location filename="../cn_diag_tool.py" line="1180" />
       <source>Error Scanning ControlNet</source>
       <translation>Ошибка сканирования ControlNet</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1171" />
+      <location filename="../cn_diag_tool.py" line="1181" />
       <source>Failed to scan ControlNet!
 (no route to the IP address?)</source>
       <translation>Не удалось просканировать ControlNet!
 (нет маршрута до IP-адреса?)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1178" />
+      <location filename="../cn_diag_tool.py" line="1188" />
       <source>Failed to scan ControlNet!
 (bad connection path?)</source>
       <translation>Не удалось просканировать ControlNet!
 (неверный путь подключения?)</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1185" />
+      <location filename="../cn_diag_tool.py" line="1195" />
       <source>Failed to scan ControlNet!</source>
       <translation>Не удалось просканировать ControlNet!</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1387" />
+      <location filename="../cn_diag_tool.py" line="1397" />
       <source>Drop all</source>
       <translation>Сбросить всё</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1388" />
+      <location filename="../cn_diag_tool.py" line="1398" />
       <source>Drop all data? Any unsaved changes will be lost.</source>
       <translation>Сбросить все данные? Несохранённые изменения будут потеряны.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1429" />
+      <location filename="../cn_diag_tool.py" line="1439" />
       <source>Close the program?</source>
       <translation>Закрыть программу?</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1430" />
+      <location filename="../cn_diag_tool.py" line="1440" />
       <source>Are you sure to quit? Any unsaved changes will be lost.</source>
       <translation>Завершить работу? Несохранённые изменения будут потеряны.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1446" />
+      <location filename="../cn_diag_tool.py" line="1456" />
       <source>About ControlNet Diagnostic Tool</source>
       <translation>О программе ControlNet Diagnostic Tool</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1447" />
+      <location filename="../cn_diag_tool.py" line="1457" />
       <source>Version:</source>
       <translation>Версия:</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1448" />
+      <location filename="../cn_diag_tool.py" line="1458" />
       <source>Commit:</source>
       <translation>Коммит:</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1449" />
+      <location filename="../cn_diag_tool.py" line="1459" />
       <source>By using ControlNet Diagnostic Tool</source>
       <translation>Используя ControlNet Diagnostic Tool,</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1450" />
+      <location filename="../cn_diag_tool.py" line="1460" />
       <source>you can significantly improve the troubleshooting speed of ControlNet networks.</source>
       <translation>можно значительно ускорить диагностику сетей ControlNet.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1454" />
+      <location filename="../cn_diag_tool.py" line="1464" />
       <source>Fugue Icons (C) 2013 Yusuke Kamiyamane. All rights reserved.</source>
       <translation>Fugue Icons (C) 2013 Yusuke Kamiyamane. Все права защищены.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="1455" />
+      <location filename="../cn_diag_tool.py" line="1465" />
       <source>System:</source>
       <translation>Система:</translation>
     </message>
@@ -542,16 +542,33 @@ The «⇑/s» column is more informative.</source>
     </message>
     <message>
       <location filename="../cn_diag_tool.py" line="154" />
+      <source>⇑ avg</source>
+      <translation>⇑ср</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="155" />
+      <source>Average TX/s since scan start</source>
+      <translation>Среднее передано/с с начала скана</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="156" />
+      <source>Average number of successfully transmitted frames per second since the scan started.
+The 24-bit counter wrap is taken into account.</source>
+      <translation>Среднее число успешно переданных кадров в секунду с момента запуска сканирования.
+Учитывается переполнение 24-битного счётчика.</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="159" />
       <source>⇞</source>
       <translation>⇞</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="155" />
+      <location filename="../cn_diag_tool.py" line="160" />
       <source>Transmit abort</source>
       <translation>Обрыв передачи</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="156" />
+      <location filename="../cn_diag_tool.py" line="161" />
       <source>Transmit abort counter (Tx-Abort): a packet was aborted because the module could not feed data onto the wire fast enough.
 Width: 8 bits.
 Indicates module overload or a physical-layer problem.</source>
@@ -560,17 +577,17 @@ Indicates module overload or a physical-layer problem.</source>
 На что указывает: перегрузка модуля или проблема физуровня.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="160" />
+      <location filename="../cn_diag_tool.py" line="165" />
       <source>⇓</source>
       <translation>⇓</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="161" />
+      <location filename="../cn_diag_tool.py" line="166" />
       <source>Good frames received</source>
       <translation>Успешно принято кадров</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="162" />
+      <location filename="../cn_diag_tool.py" line="167" />
       <source>Successfully received frames (Good Rx).
 Width: 24 bits.
 The «⇓/s» column is more informative.</source>
@@ -579,49 +596,66 @@ The «⇓/s» column is more informative.</source>
 Более информативно поле «⇓/с».</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="165" />
+      <location filename="../cn_diag_tool.py" line="170" />
       <source>⇓/s</source>
       <translation>⇓/s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="166" />
+      <location filename="../cn_diag_tool.py" line="171" />
       <source>Received frames/s</source>
       <translation>Принято кадров/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="167" />
+      <location filename="../cn_diag_tool.py" line="172" />
       <source>Increment of the good-receive counter over the last second.</source>
       <translation>Приращение счётчика успешно принятых кадров за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="170" />
+      <location filename="../cn_diag_tool.py" line="175" />
+      <source>⇓ avg</source>
+      <translation>⇓ср</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="176" />
+      <source>Average RX/s since scan start</source>
+      <translation>Среднее принято/с с начала скана</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="177" />
+      <source>Average number of successfully received frames per second since the scan started.
+The 24-bit counter wrap is taken into account.</source>
+      <translation>Среднее число успешно принятых кадров в секунду с момента запуска сканирования.
+Учитывается переполнение 24-битного счётчика.</translation>
+    </message>
+    <message>
+      <location filename="../cn_diag_tool.py" line="180" />
       <source>⇟</source>
       <translation>⇟</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="171" />
+      <location filename="../cn_diag_tool.py" line="181" />
       <source>Receive abort</source>
       <translation>Обрыв приёма</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="172" />
+      <location filename="../cn_diag_tool.py" line="182" />
       <source>Receive abort counter (Rx-Abort): reception of a packet from the wire was aborted.
 Width: 8 bits.</source>
       <translation>Счётчик прерванных приёмов (Rx-Abort): приём пакета с провода прерван.
 Разрядность: 8 бит.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="175" />
+      <location filename="../cn_diag_tool.py" line="185" />
       <source>∿</source>
       <translation>∿</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="176" />
+      <location filename="../cn_diag_tool.py" line="186" />
       <source>Noise hits</source>
       <translation>Шумовые срабатывания</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="177" />
+      <location filename="../cn_diag_tool.py" line="187" />
       <source>Noise-hit counter: the start of a frame could not be detected because of noise.
 Width: 8 bits.
 Indicates signal quality; growth means electromagnetic interference (grounding, shielding, cable routing).</source>
@@ -630,32 +664,32 @@ Indicates signal quality; growth means electromagnetic interference (grounding, 
 На что указывает: качество сигнала; рост — электромагнитные помехи (заземление, экран, прокладка кабеля).</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="181" />
+      <location filename="../cn_diag_tool.py" line="191" />
       <source>∿/s</source>
       <translation>∿/s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="182" />
+      <location filename="../cn_diag_tool.py" line="192" />
       <source>Noise hits/s</source>
       <translation>Шумовые срабатывания/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="183" />
+      <location filename="../cn_diag_tool.py" line="193" />
       <source>Increment of the noise-hit counter over the last second.</source>
       <translation>Приращение счётчика шумовых срабатываний за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="186" />
+      <location filename="../cn_diag_tool.py" line="196" />
       <source>⇆</source>
       <translation>⇆</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="187" />
+      <location filename="../cn_diag_tool.py" line="197" />
       <source>Collisions</source>
       <translation>Коллизии</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="188" />
+      <location filename="../cn_diag_tool.py" line="198" />
       <source>Collision counter: the node tried to transmit while the channel was already busy with another node.
 Width: 8 bits.
 In a CTDMA network the norm is close to zero; growth means noise, interference or misconfiguration.</source>
@@ -664,32 +698,32 @@ In a CTDMA network the norm is close to zero; growth means noise, interference o
 На что указывает: в CTDMA-сети норма близка к нулю; рост — шум, помехи или неверная конфигурация.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="192" />
+      <location filename="../cn_diag_tool.py" line="202" />
       <source>⇆/s</source>
       <translation>⇆/s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="193" />
+      <location filename="../cn_diag_tool.py" line="203" />
       <source>Collisions/s</source>
       <translation>Коллизии/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="194" />
+      <location filename="../cn_diag_tool.py" line="204" />
       <source>Increment of the collision counter over the last second.</source>
       <translation>Приращение счётчика коллизий за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="197" />
+      <location filename="../cn_diag_tool.py" line="207" />
       <source>OVRL</source>
       <translation>OVRL</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="198" />
+      <location filename="../cn_diag_tool.py" line="208" />
       <source>LLC buffer overflow</source>
       <translation>Переполнение буферов LLC</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="199" />
+      <location filename="../cn_diag_tool.py" line="209" />
       <source>LLC buffer overflow/starvation: transmit underflow, receive overflow.
 Width: 8 bits.
 Indicates receive buffers are full or transmission cannot keep up.</source>
@@ -698,19 +732,19 @@ Indicates receive buffers are full or transmission cannot keep up.</source>
 На что указывает: приёмные буферы переполнены или передача не успевает за потоком.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="203" />
+      <location filename="../cn_diag_tool.py" line="213" />
       <source>NUT
 OVRL</source>
       <translation>NUT
 OVRL</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="204" />
+      <location filename="../cn_diag_tool.py" line="214" />
       <source>NUT overload</source>
       <translation>Перегрузка NUT</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="205" />
+      <location filename="../cn_diag_tool.py" line="215" />
       <source>Number of NUTs with no time left for the unscheduled part.
 Width: 8 bits.
 Indicates the NUT is too small or the schedule is overloaded.</source>
@@ -719,140 +753,140 @@ Indicates the NUT is too small or the schedule is overloaded.</source>
 На что указывает: NUT слишком мал или расписание перегружено.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="208" />
+      <location filename="../cn_diag_tool.py" line="218" />
       <source>NUT
 OVRL/c</source>
       <translation>NUT
 OVRL/c</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="209" />
+      <location filename="../cn_diag_tool.py" line="219" />
       <source>NUT overload/s</source>
       <translation>Перегрузка NUT/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="210" />
+      <location filename="../cn_diag_tool.py" line="220" />
       <source>Increment of the NUT-overload counter over the last second.</source>
       <translation>Приращение счётчика перегрузок NUT за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="214" />
+      <location filename="../cn_diag_tool.py" line="224" />
       <source>SLOT
 OVRL</source>
       <translation>SLOT
 OVRL</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="215" />
+      <location filename="../cn_diag_tool.py" line="225" />
       <source>Slot overload</source>
       <translation>Перегрузка слота</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="216" />
+      <location filename="../cn_diag_tool.py" line="226" />
       <source>Scheduled-slot overload: more scheduled data was queued for one NUT than SchedMaxFrame allows.
 Width: 8 bits.</source>
       <translation>Перегрузка scheduled-слота: в один NUT поставлено больше запланированных данных, чем допускает параметр SchedMaxFrame.
 Разрядность: 8 бит.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="220" />
+      <location filename="../cn_diag_tool.py" line="230" />
       <source>SLOT
 OVRL/s</source>
       <translation>SLOT
 OVRL/s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="221" />
+      <location filename="../cn_diag_tool.py" line="231" />
       <source>Slot overload/s</source>
       <translation>Перегрузка слота/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="222" />
+      <location filename="../cn_diag_tool.py" line="232" />
       <source>Increment of the scheduled-slot overload counter over the last second.</source>
       <translation>Приращение счётчика перегрузок scheduled-слота за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="225" />
+      <location filename="../cn_diag_tool.py" line="235" />
       <source>BLOCK</source>
       <translation>BLOCK</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="226" />
+      <location filename="../cn_diag_tool.py" line="236" />
       <source>Transmit blockage</source>
       <translation>Блокировка передачи</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="227" />
+      <location filename="../cn_diag_tool.py" line="237" />
       <source>Transmit blockage: a single L-packet exceeds SchedMaxFrame and does not fit into the allowed transmit time.
 Width: 8 bits.</source>
       <translation>Блокировка передачи: размер одного L-пакета превышает SchedMaxFrame и не влезает в отведённое на передачу время.
 Разрядность: 8 бит.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="231" />
+      <location filename="../cn_diag_tool.py" line="241" />
       <source>BLOCK
     /s</source>
       <translation>BLOCK
     /s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="232" />
+      <location filename="../cn_diag_tool.py" line="242" />
       <source>Blockage/s</source>
       <translation>Блокировка/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="233" />
+      <location filename="../cn_diag_tool.py" line="243" />
       <source>Increment of the transmit-blockage counter over the last second.</source>
       <translation>Приращение счётчика блокировок передачи за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="236" />
+      <location filename="../cn_diag_tool.py" line="246" />
       <source>NON
 CNCR</source>
       <translation>NON
 CNCR</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="237" />
+      <location filename="../cn_diag_tool.py" line="247" />
       <source>Non-concurrence</source>
       <translation>Несогласованность</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="238" />
+      <location filename="../cn_diag_tool.py" line="248" />
       <source>Non-concurrence: two or more nodes could not agree whose turn it is to transmit (mismatch of transmitted/received message counts).
 Width: 8 bits.</source>
       <translation>Несогласованность: два и более узла не смогли согласовать, чья очередь передавать (расхождение счётчиков отправленных и принятых сообщений).
 Разрядность: 8 бит.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="242" />
+      <location filename="../cn_diag_tool.py" line="252" />
       <source>NON
 CNCR/s</source>
       <translation>NON
 CNCR/s</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="243" />
+      <location filename="../cn_diag_tool.py" line="253" />
       <source>Non-concurrence/s</source>
       <translation>Несогласованность/с</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="244" />
+      <location filename="../cn_diag_tool.py" line="254" />
       <source>Increment of the non-concurrence counter over the last second.</source>
       <translation>Приращение счётчика несогласованности за последнюю секунду.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="247" />
+      <location filename="../cn_diag_tool.py" line="257" />
       <source>LNLY</source>
       <translation>LNLY</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="248" />
+      <location filename="../cn_diag_tool.py" line="258" />
       <source>Moderator timeouts</source>
       <translation>Тайм-ауты модератора</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="249" />
+      <location filename="../cn_diag_tool.py" line="259" />
       <source>Number of timeouts waiting for the moderator: the node heard nothing from the network for 8 or more NUTs.
 Width: 8 bits.
 Indicates a lonely network, a break, or a missing moderator.</source>
@@ -861,17 +895,17 @@ Indicates a lonely network, a break, or a missing moderator.</source>
 На что указывает: «одинокая» сеть, обрыв или отсутствие модератора.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="253" />
+      <location filename="../cn_diag_tool.py" line="263" />
       <source>DUP</source>
       <translation>DUP</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="254" />
+      <location filename="../cn_diag_tool.py" line="264" />
       <source>Duplicate address</source>
       <translation>Дубликат адреса</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="255" />
+      <location filename="../cn_diag_tool.py" line="265" />
       <source>Another node with the same MAC ID was detected (address conflict).
 Width: 8 bits.
 The norm is 0; a non-zero value means two devices share one address.</source>
@@ -880,55 +914,55 @@ The norm is 0; a non-zero value means two devices share one address.</source>
 На что указывает: норма 0; ненулевое значение — двум устройствам задан один адрес.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="259" />
+      <location filename="../cn_diag_tool.py" line="269" />
       <source>MOD
 MAC</source>
       <translation>MOD
 MAC</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="260" />
+      <location filename="../cn_diag_tool.py" line="270" />
       <source>Moderator MAC ID</source>
       <translation>MAC-адрес модератора</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="261" />
+      <location filename="../cn_diag_tool.py" line="271" />
       <source>MAC ID of the current moderator node (lowest address on the network).
 Informational value, not an error counter.</source>
       <translation>MAC ID текущего узла-модератора (наименьший адрес в сети).
 Информационное значение, не счётчик ошибок.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="264" />
+      <location filename="../cn_diag_tool.py" line="274" />
       <source>nLOW
 mods</source>
       <translation>nLOW
 mods</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="265" />
+      <location filename="../cn_diag_tool.py" line="275" />
       <source>Non-lowman frames</source>
       <translation>Кадры от non-lowman</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="266" />
+      <location filename="../cn_diag_tool.py" line="276" />
       <source>Number of moderator frames received from nodes with different network parameters (non-lowman) - network parameter mismatch events.
 Width: 8 bits.</source>
       <translation>Число кадров модератора, принятых от узлов с иными сетевыми параметрами (не-lowman), — события несовпадения параметров сети.
 Разрядность: 8 бит.</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="270" />
+      <location filename="../cn_diag_tool.py" line="280" />
       <source>ROG</source>
       <translation>ROG</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="271" />
+      <location filename="../cn_diag_tool.py" line="281" />
       <source>Rogue events</source>
       <translation>Rogue-события</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="272" />
+      <location filename="../cn_diag_tool.py" line="282" />
       <source>Rogue events: nodes transmitting outside the schedule or incorrectly.
 Width: 8 bits.
 Indicates a network problem.</source>
@@ -940,7 +974,7 @@ Indicates a network problem.</source>
   <context>
     <name>LogWindow</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="563" />
+      <location filename="../cn_diag_tool.py" line="573" />
       <source>Log Viewer</source>
       <translation>Просмотр лога</translation>
     </message>
@@ -1121,17 +1155,17 @@ Indicates a network problem.</source>
   <context>
     <name>Path</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="323" />
+      <location filename="../cn_diag_tool.py" line="333" />
       <source>Path is empty</source>
       <translation>Путь пуст</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="325" />
+      <location filename="../cn_diag_tool.py" line="335" />
       <source>Path must start with &lt;address&gt;/bp/&lt;number&gt;/</source>
       <translation>Путь должен начинаться с &lt;адрес&gt;/bp/&lt;номер&gt;/</translation>
     </message>
     <message>
-      <location filename="../cn_diag_tool.py" line="327" />
+      <location filename="../cn_diag_tool.py" line="337" />
       <source>Path must end with /cnet</source>
       <translation>Путь должен заканчиваться на /cnet</translation>
     </message>
@@ -1139,7 +1173,7 @@ Indicates a network problem.</source>
   <context>
     <name>PathHelp</name>
     <message>
-      <location filename="../cn_diag_tool.py" line="305" />
+      <location filename="../cn_diag_tool.py" line="315" />
       <source>&lt;b&gt;ControlNet path format&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;code&gt;&amp;lt;address&amp;gt;/bp/&amp;lt;slot&amp;gt;/cnet&lt;/code&gt; - base path: the controller address and the backplane slot holding the ControlNet module.&lt;br&gt;&lt;code&gt;/&amp;lt;node&amp;gt;/bp/&amp;lt;slot&amp;gt;/cnet&lt;/code&gt; - an extra hop for a chain of ControlNet networks (the node the bridge sits on).&lt;br&gt;&lt;br&gt;The path always ends with &lt;code&gt;/cnet&lt;/code&gt;; the program appends node numbers itself.&lt;br&gt;The address is an IPv4 or a host name.&lt;br&gt;&lt;br&gt;&lt;b&gt;Examples:&lt;/b&gt;&lt;br&gt;&lt;code&gt;11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet/2/bp/2/cnet&lt;/code&gt;&lt;br&gt;&lt;code&gt;11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet&lt;/code&gt;</source>
       <translation>&lt;b&gt;Формат пути ControlNet&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;code&gt;&amp;lt;адрес&amp;gt;/bp/&amp;lt;слот&amp;gt;/cnet&lt;/code&gt; — базовый путь: адрес контроллера и backplane-слот с модулем ControlNet.&lt;br&gt;&lt;code&gt;/&amp;lt;узел&amp;gt;/bp/&amp;lt;слот&amp;gt;/cnet&lt;/code&gt; — дополнительный хоп при цепочке сетей ControlNet (узел, на котором стоит мост).&lt;br&gt;&lt;br&gt;Путь всегда заканчивается на &lt;code&gt;/cnet&lt;/code&gt;; номера узлов программа дописывает сама.&lt;br&gt;Адрес — IPv4 или имя хоста.&lt;br&gt;&lt;br&gt;&lt;b&gt;Примеры:&lt;/b&gt;&lt;br&gt;&lt;code&gt;11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet/2/bp/2/cnet&lt;/code&gt;&lt;br&gt;&lt;code&gt;11.120.20.129/bp/5/cnet/1/bp/2/cnet/2/bp/2/cnet&lt;/code&gt;</translation>
     </message>
