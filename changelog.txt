@@ -29,3 +29,9 @@
      Reset Counters restarts the averaging baseline
      Fix Bad Frame Intersection table clearing itself on every LED poll
      Unit tests for the counter math
+1.4 Single sequential poller (one CIP session for all nodes)
+     Configurable poll cycle in Config → Read Timer
+     Connection Manager window with per-node connection, CPU and buffer stats
+     Fix Insufficient resource errors under multi-node polling
+     Toolbar order and settings descriptions refined
+     Consistent Fugue icons

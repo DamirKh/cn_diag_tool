@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 major = 1
-minor = 3
+minor = 4
 strng = f"{major}.{minor}"
 
 
