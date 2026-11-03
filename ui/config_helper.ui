@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>424</width>
-    <height>148</height>
+    <height>260</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>424</width>
-    <height>133</height>
+    <height>240</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -23,27 +23,10 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="2">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>ms</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Update timer</string>
+      <string>LED update period</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -69,17 +52,90 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="0" column="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>ms</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>How often the LED indicators are redrawn, in milliseconds.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Poll cycle</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QSpinBox" name="pollSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="minimum">
+      <number>500</number>
+     </property>
+     <property name="maximum">
+      <number>10000</number>
+     </property>
+     <property name="singleStep">
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>1500</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>ms</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>How often all ControlNet nodes are polled, in milliseconds.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>When closing window</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="4" column="1">
     <widget class="QCheckBox" name="checkBox">
      <property name="text">
       <string>ask confirmation</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -95,11 +151,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>227</x>
-     <y>100</y>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
-     <y>132</y>
+     <y>258</y>
     </hint>
    </hints>
   </connection>
@@ -111,11 +167,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>280</x>
-     <y>100</y>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
-     <y>132</y>
+     <y>258</y>
     </hint>
    </hints>
   </connection>

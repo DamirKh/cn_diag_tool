@@ -164,6 +164,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="actionShow_CrossTable"/>
+    <addaction name="actionConnection_Manager"/>
     <addaction name="actionOpen_config_folder"/>
     <addaction name="actionShow_log"/>
     <addaction name="actionExport_to_Excel"/>
@@ -200,19 +201,23 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionDrop_all"/>
    <addaction name="actionLoad_site"/>
+   <addaction name="actionConnection_Manager"/>
+   <addaction name="actionShow_CrossTable"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionExport_to_Excel"/>
+   <addaction name="separator"/>
    <addaction name="actionDrop_Counters"/>
    <addaction name="actionAck"/>
-   <addaction name="actionShow_CrossTable"/>
    <addaction name="separator"/>
-   <addaction name="actionShow_log"/>
    <addaction name="actionTable_Config"/>
-   <addaction name="actionExport_to_Excel"/>
+   <addaction name="actionShow_log"/>
   </widget>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="document-save">
-     <normaloff>../../../../.designer/backup</normaloff>../../../../.designer/backup</iconset>
+    <iconset resource="../asset/asset.qrc">
+     <normaloff>:/asset/disk.png</normaloff>:/asset/disk.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -260,6 +265,15 @@
    </property>
    <property name="text">
     <string>Show CrossTable</string>
+   </property>
+  </action>
+  <action name="actionConnection_Manager">
+   <property name="icon">
+    <iconset resource="../asset/asset.qrc">
+     <normaloff>:/asset/network-hub.png</normaloff>:/asset/network-hub.png</iconset>
+   </property>
+   <property name="text">
+    <string>Connection Manager</string>
    </property>
   </action>
   <action name="actionTable_Config">
@@ -344,6 +358,10 @@
    </property>
   </action>
   <action name="actionDrop_all">
+   <property name="icon">
+    <iconset resource="../asset/asset.qrc">
+     <normaloff>:/asset/bin.png</normaloff>:/asset/bin.png</iconset>
+   </property>
    <property name="text">
     <string>Drop all</string>
    </property>

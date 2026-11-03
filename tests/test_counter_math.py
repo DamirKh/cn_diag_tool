@@ -7,24 +7,18 @@ import unittest
 
 from PyQt6.QtCore import QCoreApplication
 
-import Plc_connection_worker as w
+from counter_math import CounterTracker
 
 
 class CounterMathTest(unittest.TestCase):
     def setUp(self):
-        self.worker = w.PLCConnectionWorker(1)
-        self.worker._previous_counters = {}
-        self.worker._previous_timestamp = 0.0
+        self.tracker = CounterTracker(initial_timestamp=0.0)
 
     def feed(self, counters, ts):
-        dt = ts - self.worker._previous_timestamp
-        result = self.worker._compute_rates(counters, ts, dt)
-        self.worker._previous_counters = counters.copy()
-        self.worker._previous_timestamp = ts
-        return result
+        return self.tracker.compute_rates(counters, ts)
 
     def inc(self, key, previous, value, dt=1.0):
-        return self.worker._corrected_increment(key, previous, value, dt)
+        return self.tracker.corrected_increment(key, previous, value, dt)
 
     # --- increment / wrap detection -------------------------------------
 
@@ -95,7 +89,7 @@ class CounterMathTest(unittest.TestCase):
     def test_reset_average_starts_new_baseline(self):
         self.feed({'good_frames_transmitted': 0}, 0.0)
         self.feed({'good_frames_transmitted': 100}, 1.0)  # avg 100
-        self.worker._reset_average()
+        self.tracker.reset_average(2.0)
         r = self.feed({'good_frames_transmitted': 1000}, 2.0)  # new baseline sample
         self.assertNotIn('good_frames_transmitted_avg', r)
         r2 = self.feed({'good_frames_transmitted': 1100}, 3.0)  # +100 over 1 s

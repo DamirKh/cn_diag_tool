@@ -157,6 +157,16 @@ cn_diag_LED = {
     "name": 'CN_DIAG_LED'
 }
 
+connection_manager = {
+    "service": Services.get_attribute_single,
+    "class_code": 0x06,
+    "instance": 0x1,
+    "connected": False,
+    "unconnected_send": True,
+    "route_path": True,
+    "name": 'CONNECTION_MANAGER'
+}
+
 
 class MyModuleIdentityObject(
     Struct(

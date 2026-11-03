@@ -28,7 +28,7 @@ QtCore.QDir.addSearchPath('asset', user_data.asset_dir)
 
 from cn_diag_tool_ui import Ui_MainWindow
 from cndt_config_dialog import Ui_Dialog
-from Plc_connection_worker import PLCConnectionWorker
+from cn_poller import ControlNetPoller
 from cn_lib import scan_cn
 from pycomm3.exceptions import CommError, RequestError
 
@@ -580,6 +580,98 @@ class CrossTableDialog(QDialog, floating_table_ui.Ui_Dialog, GeometrySaver):
         self._complaint_cols[node_num] = shown_cols
 
 
+class ConnectionManagerDialog(QDialog, GeometrySaver):
+    visibilityChanged = pyqtSignal(bool)
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.setWindowTitle(self.tr("Connection Manager"))
+        self.resize(780, 320)
+
+        layout = QVBoxLayout(self)
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels([
+            self.tr("Node"),
+            self.tr("Total conn."),
+            self.tr("Used"),
+            self.tr("Open req."),
+            self.tr("CPU %"),
+            self.tr("Max buffer"),
+            self.tr("Remaining"),
+        ])
+        self.table.verticalHeader().setVisible(False)
+        self.table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.table)
+
+        self.updated_label = QLabel(self.tr("Updated:") + " —", self)
+        layout.addWidget(self.updated_label)
+
+        self._rows = {}
+        self.geometry_saver_init(settings_key="ConnectionManagerDialog")
+        self.hide()
+
+    def set_nodes(self, labels):
+        previous = {}
+        for label, row in self._rows.items():
+            previous[label] = [
+                self.table.item(row, col).text() if self.table.item(row, col) else "—"
+                for col in range(1, 7)
+            ]
+
+        self._rows = {}
+        self.table.setRowCount(len(labels))
+        for row, label in enumerate(labels):
+            node_item = QTableWidgetItem(label)
+            node_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 0, node_item)
+            values = previous.get(label)
+            for col in range(1, 7):
+                text = values[col - 1] if values else "—"
+                cell = QTableWidgetItem(text)
+                cell.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                self.table.setItem(row, col, cell)
+            self._rows[label] = row
+        if not previous:
+            self.updated_label.setText(self.tr("Updated:") + " —")
+
+    def update_stats(self, node, stats):
+        row = self._rows.get(f"[{node:02}]")
+        if row is None:
+            return
+        self._set(row, 1, stats.get("total_connections"))
+        self._set(row, 2, stats.get("connections_used"))
+        self._set(row, 3, stats.get("open_requests"))
+        cpu = stats.get("cpu_utilization")
+        self._set(row, 4, None if cpu is None else f"{cpu:.1f}")
+        self._set(row, 5, stats.get("max_buffer_size"))
+        self._set(row, 6, stats.get("buffer_remaining"))
+        self.updated_label.setText(
+            self.tr("Updated:") + " " + datetime.datetime.now().strftime("%H:%M:%S"))
+
+    def _set(self, row, column, value):
+        item = self.table.item(row, column)
+        if item is None:
+            return
+        item.setText("—" if value is None else str(value))
+
+    def clear(self):
+        self.table.setRowCount(0)
+        self._rows = {}
+        self.updated_label.setText(self.tr("Updated:") + " —")
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.visibilityChanged.emit(True)
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.visibilityChanged.emit(False)
+
+
 class LogWindow(QDialog, GeometrySaver):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -601,12 +693,13 @@ class LogWindow(QDialog, GeometrySaver):
 
 
 class HelperConfigDialog(QDialog, Ui_Dialog):
-    def __init__(self, callback, timer_value, confirmation, parent=None):
+    def __init__(self, callback, timer_value, poll_interval, confirmation, parent=None):
         super().__init__(parent)
         self.setupUi(self)
         self._callback = callback
         self.connectSignalsSlots()
         self.spinBox.setValue(timer_value)
+        self.pollSpinBox.setValue(poll_interval)
         self.checkBox.setChecked(confirmation)
 
     def connectSignalsSlots(self):
@@ -694,6 +787,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, config_file_path, parent=None):
         super().__init__(parent)
+        self._poller = None
         self._reset_enabled = False
         self.setupUi(self)
         self.statusbar.showMessage("Start application")
@@ -709,6 +803,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
         self.logger_window = LogWindow(self)
         self.MyCrossTable = CrossTableDialog(parent=self)
+        self.connection_manager_dialog = ConnectionManagerDialog(parent=self)
+        self.connection_manager_dialog.visibilityChanged.connect(
+            self._on_connection_manager_visibility)
         self.connectSignalsSlots()
         self._app_config_file_path = config_file_path
         self._config_file_path = None
@@ -726,8 +823,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         # adding label to status bar
         self.statusBar().addPermanentWidget(self.status_bar_label_1)
 
-        self._workers = {}
-        self._retired_workers = []
+        self._retired_pollers = []
+        self._poll_interval = 1500
         self._site_loaded = False
         self._paused = False
 
@@ -825,6 +922,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         config['Close_tab_confirm'] = self._confirm_on_close
         # timer setting
         config['Blinker'] = self.led_blink_timer.interval()
+        config['Poll_interval'] = self._poll_interval
         try:
             with open(self._app_config_file_path, 'w') as f:
                 json.dump(config, f, indent=4)  # Use indent for readability
@@ -841,6 +939,12 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 config: dict = json.load(f)
                 self._confirm_on_close = config.get('Close_tab_confirm', True)
                 self.led_blink_timer.setInterval(config.get('Blinker', LED_blink_period))
+                poll_interval = config.get('Poll_interval', 1500)
+                try:
+                    poll_interval = int(poll_interval)
+                except (TypeError, ValueError):
+                    poll_interval = 1500
+                self._poll_interval = max(500, min(10000, poll_interval))
             log.info(f'Application configuration loaded from {self._app_config_file_path}')
             return True
         except FileNotFoundError:
@@ -849,6 +953,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             log.error(f"Error decoding JSON configuration: {e}")
         self._confirm_on_close = True
         self.led_blink_timer.setInterval(LED_blink_period)
+        self._poll_interval = 1500
 
     def save_site_config_as(self):
         """Saves the application configuration to a user-specified JSON file."""
@@ -897,7 +1002,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             plc_path = plc_settings.get('path', "")
             self.lineEditConnectionPath.setText(plc_path)
 
-            self._stop_workers()
+            self._stop_poller()
+            self.connection_manager_dialog.clear()
             self.tableWidget.clearContents()
             self.tableWidget.setRowCount(0)
 
@@ -954,10 +1060,12 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self.config_file_path = filename  # update path in-place for future 'save' calls
             export_paths.reset(Glob_settings)
 
-    def on_connection_lost(self, text_error: str):
-        log.error(f"Lost connection {text_error}")
-        QMessageBox.warning(self, self.tr("Connection to PLC lost"), text_error)
-        pass
+    def on_connection_lost(self, node_num, text_error):
+        log.error(f"Connection lost: {text_error}")
+        self.statusBar().showMessage(self.tr("Connection to PLC lost") + f": {text_error}", 10000)
+
+    def on_non_fatal_error(self, node_num, text_error):
+        self.statusBar().showMessage(f"[{node_num:02}] {text_error}", 5000)
 
     def connectSignalsSlots(self):
         self.pushButtonScan.clicked.connect(self.onButtonScan)
@@ -979,6 +1087,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen_config_folder.triggered.connect(self.on_open_folder)
         self.actionShow_log.triggered.connect(self.show_log)
         self.actionShow_CrossTable.triggered.connect(self.show_crosstable)
+        self.actionConnection_Manager.triggered.connect(self.show_connection_manager)
         self.actionTable_Config.triggered.connect(self.config_dialog)
         self.actionExport_to_Excel.triggered.connect(self.export_to)
         self.tableWidget.rowsMoved.connect(self.sync_crosstable_rows)
@@ -1017,7 +1126,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
     def _restart(self):
         """Restarts the current application (used after a language change)."""
         self._restarting = True  # bypass the unsaved-changes prompt, do not persist it
-        self._stop_workers()
+        self._stop_poller()
         program = sys.executable
         args = sys.argv[1:]
         if not getattr(sys, 'frozen', False):
@@ -1040,10 +1149,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def onResetCounters(self):
         log.debug("Reset counters")
-        for node_num, w in self._workers.items():
-            assert isinstance(w, PLCConnectionWorker)
-            w.reset_counters()
-            log.debug(f'reset [{node_num:02}]')
+        if self._poller:
+            self._poller.reset_counters()
 
     def config_dialog(self):
         log.debug("Open config dialog")
@@ -1051,11 +1158,12 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         dialog.exec()  # Show modally
 
     def sync_crosstable_rows(self):
-        """Synchronizes the row order of the CrossTableDialog with self.tableWidget."""
+        """Synchronizes the row order of the dialogs with self.tableWidget."""
         self._site_changed = True
         if self.MyCrossTable is not None:  # Check if dialog was created.
             log.debug(f'Synchronise table')
             self.MyCrossTable.fill_table(self.tableWidget)
+        self._refresh_connection_manager()
 
     def show_log(self):
         self.logger_window.show()
@@ -1063,6 +1171,26 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
     def show_crosstable(self):
         log.debug('Hit show crosstable')
         self.MyCrossTable.show()
+
+    def show_connection_manager(self):
+        self._refresh_connection_manager()
+        self.connection_manager_dialog.show()
+        self.connection_manager_dialog.raise_()
+        self.connection_manager_dialog.activateWindow()
+
+    def _refresh_connection_manager(self):
+        labels = []
+        header = self.tableWidget.verticalHeader()
+        for visual in range(self.tableWidget.rowCount()):
+            logical = header.logicalIndex(visual)
+            item = self.tableWidget.verticalHeaderItem(logical)
+            if item and item.text() != MEDIA_CONVERTER:
+                labels.append(item.text())
+        self.connection_manager_dialog.set_nodes(labels)
+
+    def _on_connection_manager_visibility(self, visible):
+        if self._poller:
+            self._poller.set_module_stats_enabled(visible)
 
     def _export_column_spec(self, logical):
         table = self.tableWidget
@@ -1158,7 +1286,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         return os.path.join(directory, "export.xlsx")
 
     def export_to(self):
-        if not len(self._workers):
+        if self._poller is None:
             return
         default_path = self._export_default_path()
         dialog = ExportDialog(self, title=self.tr("Export data to..."), default_path=default_path)
@@ -1252,11 +1380,15 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         old_value = self.led_blink_timer.interval()
         dialog = HelperConfigDialog(parent=self,
                                     timer_value=self.led_blink_timer.interval(),
+                                    poll_interval=self._poll_interval,
                                     confirmation=self._confirm_on_close,
                                     callback=self.led_blink_timer.setInterval)
         result = dialog.exec()
         if result:
             self._confirm_on_close = dialog.checkBox.checkState().value == QtCore.Qt.CheckState.Checked.value
+            self._poll_interval = dialog.pollSpinBox.value()
+            if self._poller:
+                self._poller.set_cycle_time(self._poll_interval / 1000)
         else:
             self.led_blink_timer.setInterval(old_value)
 
@@ -1311,31 +1443,33 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
 
     def _update_run_buttons(self):
         """Show/Pause form an exclusive pair: one stays pressed, the other released."""
-        has_workers = bool(self._workers)
-        self.pushButtonShow.setEnabled(has_workers)
-        self.pushButtonPause.setEnabled(has_workers)
+        has_poller = self._poller is not None
+        self.pushButtonShow.setEnabled(has_poller)
+        self.pushButtonPause.setEnabled(has_poller)
         (self.pushButtonPause if self._paused else self.pushButtonShow).setChecked(True)
 
-    def _stop_workers(self, timeout_ms=10000):
-        """Stops all polling workers and waits for their threads to finish.
+    def _stop_poller(self, timeout_ms=10000):
+        """Stops the polling thread and waits for it to finish.
 
-        A running QThread must never be destroyed, so a worker that does not stop
+        A running QThread must never be destroyed, so a poller that does not stop
         within the timeout is kept referenced (and cleaned up on finish) instead.
         """
-        workers = list(self._workers.values())
-        self._workers = {}
-        for worker in workers:
-            worker.stop()
-        for worker in workers:
-            if not worker.wait(timeout_ms):
-                log.warning(f'Worker [{worker.node_num:02}] did not stop within {timeout_ms} ms; deferring cleanup')
-                for signal in (worker.signals.counters_read_done, worker.signals.leds_read_done):
-                    try:
-                        signal.disconnect()
-                    except (TypeError, RuntimeError):
-                        pass
-                self._retired_workers.append(worker)
-        self._retired_workers = [worker for worker in self._retired_workers if not worker.isFinished()]
+        poller = self._poller
+        self._poller = None
+        if poller is None:
+            return
+        poller.stop()
+        if not poller.wait(timeout_ms):
+            log.warning(f'Poller did not stop within {timeout_ms} ms; deferring cleanup')
+            for signal in (poller.counters_read_done, poller.leds_read_done,
+                           poller.module_stats_read, poller.non_fatal_error,
+                           poller.connection_lost):
+                try:
+                    signal.disconnect()
+                except (TypeError, RuntimeError):
+                    pass
+            self._retired_pollers.append(poller)
+        self._retired_pollers = [p for p in self._retired_pollers if not p.isFinished()]
 
     def on_path_changed(self, text: str):
         """Live feedback for the ControlNet path field."""
@@ -1369,7 +1503,7 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, self.tr("ControlNet path"),
                                 f"{err}.\n\n{self.tr('Press \"?\" for help.')}")
             return
-        self._stop_workers()
+        self._stop_poller()
         self.lineEditConnectionPath.setEnabled(False)
         self.pushButtonScan.setEnabled(False)
         self._app.instance().setOverrideCursor(QCursor(Qt.CursorShape.BusyCursor))
@@ -1406,8 +1540,10 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         if not self._site_loaded:
             self.tableWidget.setRowCount(len(nodes))
 
+        node_paths = {}
         for row, (cn_module_serial, cn_path) in enumerate(paths.items()):
             node_num = int(cn_path.split('/')[-1])
+            node_paths[node_num] = cn_path
 
             if self._site_loaded:
                 target_row = self._find_row_by_node(node_num)
@@ -1427,36 +1563,37 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
             self._set_identity_value(target_row, 'Name', info.get('product_name'))
             self._set_identity_value(target_row, 'Rev', info.get('rev'))
 
-            cn_node_worker = PLCConnectionWorker(node_num)
-            cn_node_worker.path = cn_path
-            cn_node_worker.signals.counters_read_done.connect(self.update_diag_data)
-            cn_node_worker.signals.counters_read_done.connect(self.MyCrossTable.update_diag_data)
-            cn_node_worker.signals.leds_read_done.connect(self.update_diag_data)
-            cn_node_worker.start()
-            self._workers[node_num] = cn_node_worker
-
         self.tableWidget.load_configuration()
         self.MyCrossTable.fill_table(self.tableWidget)
         self.pushButtonAddMediaConverter.setEnabled(True)
         self.led_blink_timer.start()
         self._paused = False
+        self.connection_manager_dialog.clear()
+        self._refresh_connection_manager()
+        if node_paths:
+            self._poller = ControlNetPoller(_path, node_paths, self._poll_interval / 1000)
+            self._poller.counters_read_done.connect(self.update_diag_data)
+            self._poller.counters_read_done.connect(self.MyCrossTable.update_diag_data)
+            self._poller.leds_read_done.connect(self.update_diag_data)
+            self._poller.module_stats_read.connect(self.connection_manager_dialog.update_stats)
+            self._poller.connection_lost.connect(self.on_connection_lost)
+            self._poller.non_fatal_error.connect(self.on_non_fatal_error)
+            if self.connection_manager_dialog.isVisible():
+                self._poller.set_module_stats_enabled(True)
+            self._poller.start()
         self._update_run_buttons()
 
     def onButtonPause(self):
         log.info('Pause reading')
-        for node_num, worker in self._workers.items():
-            assert isinstance(worker, PLCConnectionWorker)
-            worker.pause(True)
-            log.debug(f'paused [{node_num:02}]')
+        if self._poller:
+            self._poller.pause(True)
         self._paused = True
         self._update_run_buttons()
 
     def onButtonShow(self):
         log.info('Resume reading')
-        for node_num, worker in self._workers.items():
-            assert isinstance(worker, PLCConnectionWorker)
-            worker.pause(False)
-            log.debug(f'resumed [{node_num:02}]')
+        if self._poller:
+            self._poller.pause(False)
         self._paused = False
         self._update_run_buttons()
 
@@ -1524,12 +1661,14 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                         case 7:
                             cell_item.setData(Qt.ItemDataRole.DecorationRole, RED)
 
-        self.status_bar_label_1.setText((f"Number of running workers: {self.running_count}"))
+        self.status_bar_label_1.setText(self.tr("Nodes polled:") + f" {self.running_count}")
         self.actionDrop_Counters.setEnabled(self._reset_enabled and self.running_count > 0)
 
     @property
     def running_count(self):
-        return sum(worker.isRunning() for worker in self._workers.values())
+        if self._poller is None or not self._poller.isRunning():
+            return 0
+        return self._poller.node_count
 
     def acknowledge(self):
         """reset warnings"""
@@ -1606,8 +1745,9 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
                 return
         log.info('Drop all: resetting to initial state')
 
-        self._stop_workers()
+        self._stop_poller()
         self.led_blink_timer.stop()
+        self.connection_manager_dialog.clear()
 
         # main table
         self.tableWidget.clearContents()
@@ -1652,7 +1792,8 @@ class DiagWindow(QMainWindow, Ui_MainWindow):
         # persist geometry of the detached dialogs that may only have been hidden, not closed
         self.logger_window.save_geometry()
         self.MyCrossTable.save_geometry()
-        self._stop_workers()
+        self.connection_manager_dialog.save_geometry()
+        self._stop_poller()
         event.accept()
 
     def about(self):

@@ -102,4 +102,4 @@ CI ([`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml)
 
 ## Лицензия
 
-[GNU General Public License v3.0](LICENSE). Иконки — Fugue Icons (C) 2013 Yusuke Kamiyamane.
+[GNU General Public License v3.0](LICENSE). Иконки — [Fugue Icons](https://p.yusukekamiyamane.com/) (C) 2013 Yusuke Kamiyamane, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
