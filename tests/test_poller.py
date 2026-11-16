@@ -13,11 +13,14 @@ class FakeTag:
 
 
 class FakeDriver:
-    def __init__(self, errors=None, cm_values=None, cm_errors=None):
+    def __init__(self, errors=None, cm_values=None, cm_errors=None,
+                 cm_all_value=None, cm_all_error=None):
         self.calls = []
         self.errors = errors or {}
         self.cm_values = cm_values or {}
         self.cm_errors = cm_errors or {}
+        self.cm_all_value = cm_all_value
+        self.cm_all_error = cm_all_error
         self.closed = False
 
     def open(self):
@@ -30,6 +33,12 @@ class FakeDriver:
         self.calls.append(kwargs)
         name = kwargs['name']
         if kwargs.get('class_code') == 0x06:
+            if 'attribute' not in kwargs:
+                if self.cm_all_error:
+                    return FakeTag(error=self.cm_all_error)
+                if self.cm_all_value is not None:
+                    return FakeTag(value=self.cm_all_value)
+                return FakeTag(error='Object does not exist')
             attribute = kwargs['attribute']
             if attribute in self.cm_errors:
                 return FakeTag(error=self.cm_errors[attribute])
@@ -42,6 +51,20 @@ class FakeDriver:
         if 'COUNTERS' in name:
             return FakeTag(value=bytes(42))
         return FakeTag(value=bytes(6))
+
+
+def cm_all_payload(entries=382, bits=b'\xff\x07', attr10=False):
+    data = b''.join(value.to_bytes(2, 'little')
+                    for value in (137, 109, 0, 0, 7, 0, 0, 31))
+    data += entries.to_bytes(2, 'little')
+    nbytes = (entries + 7) // 8
+    data += bits + b'\x00' * (nbytes - len(bits))
+    if attr10:
+        data += (0).to_bytes(2, 'little')
+    data += (103).to_bytes(2, 'little')
+    data += (49152).to_bytes(4, 'little')
+    data += (49152).to_bytes(4, 'little')
+    return data
 
 
 def make_poller(nodes=(1, 2), cycle_time=1.0):
@@ -171,6 +194,53 @@ class ControlNetPollerTest(unittest.TestCase):
                          {'bp/0/cnet/1', 'bp/0/cnet/2'})
         self.assertTrue(all(call['unconnected_send'] for call in cm_calls))
 
+    def test_module_stats_uses_get_attributes_all(self):
+        poller = make_poller(nodes=(1,))
+        poller.set_module_stats_enabled(True)
+        driver = FakeDriver(cm_all_value=cm_all_payload())
+        stats = []
+        poller.module_stats_read.connect(lambda node, data: stats.append((node, data)))
+
+        poller._poll_module_stats(driver)
+
+        data = stats[0][1]
+        self.assertEqual(data['total_connections'], 382)
+        self.assertEqual(data['connections_used'], 11)
+        self.assertEqual(data['open_requests'], 137)
+        self.assertEqual(data['cpu_utilization'], 10.3)
+        self.assertEqual(data['max_buffer_size'], 49152)
+        self.assertEqual(data['buffer_remaining'], 49152)
+        cm_calls = [call for call in driver.calls if call.get('class_code') == 0x06]
+        self.assertEqual(len(cm_calls), 1)
+        self.assertNotIn('attribute', cm_calls[0])
+
+    def test_module_stats_falls_back_to_individual(self):
+        poller = make_poller(nodes=(1,))
+        poller.set_module_stats_enabled(True)
+        values = {
+            1: (123).to_bytes(2, 'little'),
+            9: (10).to_bytes(2, 'little') + bytes([0b00000101, 0b00000010]),
+            11: (235).to_bytes(2, 'little'),
+            12: (65536).to_bytes(4, 'little'),
+            13: (41200).to_bytes(4, 'little'),
+        }
+        driver = FakeDriver(cm_all_error='Service not supported', cm_values=values)
+        stats = []
+        poller.module_stats_read.connect(lambda node, data: stats.append((node, data)))
+
+        poller._poll_module_stats(driver)
+
+        data = stats[0][1]
+        self.assertEqual(data['total_connections'], 10)
+        self.assertEqual(data['connections_used'], 3)
+        self.assertEqual(data['open_requests'], 123)
+        self.assertEqual(data['cpu_utilization'], 23.5)
+        self.assertEqual(data['max_buffer_size'], 65536)
+        self.assertEqual(data['buffer_remaining'], 41200)
+        cm_calls = [call for call in driver.calls if call.get('class_code') == 0x06]
+        self.assertTrue(any('attribute' not in call for call in cm_calls))
+        self.assertTrue(any('attribute' in call for call in cm_calls))
+
     def test_module_stats_generic_layout(self):
         poller = make_poller(nodes=(1,))
         poller.set_module_stats_enabled(True)
@@ -226,7 +296,7 @@ class ControlNetPollerTest(unittest.TestCase):
         poller._poll_cycle(driver)
         self.assertTrue(any(call.get('class_code') == 0x06 for call in driver.calls))
 
-    def test_unsupported_node_is_skipped_after_first_attempt(self):
+    def test_module_stats_are_retried_after_failure(self):
         poller = make_poller(nodes=(1,))
         poller.set_module_stats_enabled(True)
         driver = FakeDriver()
@@ -236,7 +306,7 @@ class ControlNetPollerTest(unittest.TestCase):
 
         driver.calls.clear()
         poller._poll_module_stats(driver)
-        self.assertEqual(driver.calls, [])
+        self.assertTrue(driver.calls)
 
 
 def setUpModule():

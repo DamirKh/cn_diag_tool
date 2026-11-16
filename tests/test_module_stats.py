@@ -43,5 +43,44 @@ class ConnectionEntryListTest(unittest.TestCase):
         self.assertEqual(module_stats.parse_connection_entry_list(b''), (None, None))
 
 
+def all_payload(entries=382, bits=b'\xff\x07', attr10=False):
+    data = b''.join(value.to_bytes(2, 'little')
+                    for value in (137, 109, 0, 0, 7, 0, 0, 31))
+    data += entries.to_bytes(2, 'little')
+    nbytes = (entries + 7) // 8
+    data += bits + b'\x00' * (nbytes - len(bits))
+    if attr10:
+        data += (0).to_bytes(2, 'little')
+    data += (103).to_bytes(2, 'little')
+    data += (49152).to_bytes(4, 'little')
+    data += (49152).to_bytes(4, 'little')
+    return data
+
+
+class ConnectionManagerAllTest(unittest.TestCase):
+    def test_rockwell_layout(self):
+        self.assertEqual(module_stats.parse_connection_manager_all(all_payload()), {
+            'total_connections': 382,
+            'connections_used': 11,
+            'open_requests': 137,
+            'cpu_utilization': 10.3,
+            'max_buffer_size': 49152,
+            'buffer_remaining': 49152,
+        })
+
+    def test_optional_attribute_10(self):
+        result = module_stats.parse_connection_manager_all(all_payload(attr10=True))
+        self.assertEqual(result['cpu_utilization'], 10.3)
+        self.assertEqual(result['max_buffer_size'], 49152)
+        self.assertEqual(result['buffer_remaining'], 49152)
+
+    def test_truncated(self):
+        self.assertIsNone(module_stats.parse_connection_manager_all(all_payload()[:-1]))
+
+    def test_empty(self):
+        self.assertIsNone(module_stats.parse_connection_manager_all(None))
+        self.assertIsNone(module_stats.parse_connection_manager_all(b''))
+
+
 if __name__ == '__main__':
     unittest.main()

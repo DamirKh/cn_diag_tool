@@ -32,3 +32,37 @@ def parse_connection_entry_list(value):
         bits = bits[:-1] + bytes([bits[-1] & ((1 << remainder) - 1)])
     used = sum(byte.bit_count() for byte in bits)
     return total, used
+
+
+def parse_connection_manager_all(value):
+    """Parses a class 0x06 Get_Attributes_All response.
+
+    Layout used by Rockwell ControlNet modules: attrs 1-8 (UINT), attr 9
+    (entry list), optional attr 10 (UINT), attr 11 (UINT), attr 12/13 (UDINT).
+    """
+    if not value:
+        return None
+    data = bytes(value)
+    if len(data) < 28:
+        return None
+    entries = parse_uint(data[16:18])
+    if entries is None:
+        return None
+    nbytes = (entries + 7) // 8
+    pos = 18 + nbytes
+    if len(data) == pos + 10:
+        cpu_pos = pos
+    elif len(data) == pos + 12:
+        cpu_pos = pos + 2
+    else:
+        return None
+    total, used = parse_connection_entry_list(data[16:pos])
+    cpu = parse_uint(data[cpu_pos:cpu_pos + 2])
+    return {
+        'total_connections': total,
+        'connections_used': used,
+        'open_requests': parse_uint(data[0:2]),
+        'cpu_utilization': None if cpu is None else cpu / 10.0,
+        'max_buffer_size': parse_udint(data[cpu_pos + 2:cpu_pos + 6]),
+        'buffer_remaining': parse_udint(data[cpu_pos + 6:cpu_pos + 10]),
+    }

@@ -58,7 +58,7 @@ fill the catalog).
 - `cn_diag_tool.py` — main window and all UI logic (`DiagWindow`) + `HeaderData`/`LABELS` column schema.
 - `cn_poller.py` — `ControlNetPoller`, one `QThread` for all CN nodes; one CIP session, sequential counters/LED polling, optional per-node class 0x06 Connection Manager stats.
 - `counter_math.py` — `CounterTracker`, per-node counter rate/average math (wrap/reset aware).
-- `module_stats.py` — parsers for the Connection Manager object (class 0x06): entry list, CPU, buffers.
+- `module_stats.py` — parsers for the Connection Manager object (class 0x06): Get_Attributes_All and individual attributes (entry list, CPU, buffers).
 - `cn_lib.py` — `scan_cn()` scans CN node numbers `0..99` at a CIP path for modules.
 - `cip_request.py` — `pycomm3` CIP message definitions and `Struct` decoders (counter/LED/identity layouts).
 - `excel_export.py` — Qt-free XLSX report builder (metadata block, typed cells, styling, LED legend).
@@ -72,8 +72,8 @@ leftover from the source monorepo; it referenced attributes of the old polling w
 Runtime flow: user enters a CIP path → `scan_cn` finds nodes over one CIP session → one
 `ControlNetPoller` polls all nodes sequentially over a single session, with a configurable cycle
 (`Config → Read Timer`). While the Connection Manager window is open, the same poller also reads
-class 0x06 attrs 9/1/11/12/13 per node every 5 s. Most functionality is untestable without real
-ControlNet hardware/PLC.
+the class 0x06 Connection Manager per node (Get_Attributes_All, individual fallback) every 5 s.
+Most functionality is untestable without real ControlNet hardware/PLC.
 
 ## Config & user data
 

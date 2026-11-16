@@ -167,6 +167,16 @@ connection_manager = {
     "name": 'CONNECTION_MANAGER'
 }
 
+connection_manager_all = {
+    "service": Services.get_attributes_all,
+    "class_code": 0x06,
+    "instance": 0x1,
+    "connected": False,
+    "unconnected_send": True,
+    "route_path": True,
+    "name": 'CONNECTION_MANAGER_ALL'
+}
+
 
 class MyModuleIdentityObject(
     Struct(

@@ -63,7 +63,6 @@ class ControlNetPoller(QThread):
         self._module_stats_interval = MODULE_STATS_INTERVAL
         self._last_module_stats = 0.0
         self._module_stats_logged = set()
-        self._module_stats_unsupported = set()
         self._lock = threading.Lock()
 
     @property
@@ -220,14 +219,26 @@ class ControlNetPoller(QThread):
         for node in nodes:
             if self._stop_event or not self._is_module_stats_enabled():
                 return
-            if node in self._module_stats_unsupported:
-                continue
             stats = self._read_node_stats(driver, node)
             if stats is None:
                 return
             self.module_stats_read.emit(node, stats)
 
     def _read_node_stats(self, driver, node):
+        all_value = self._read_cm_all(driver, node)
+        if all_value is _RESOURCE_ERROR:
+            return None
+        if all_value is not None:
+            stats = module_stats.parse_connection_manager_all(all_value)
+            if stats is not None:
+                if node not in self._module_stats_logged:
+                    self._module_stats_logged.add(node)
+                    log.info('CM [%02d] all raw: %s', node, _hex(all_value))
+                    log.info('CM [%02d] parsed: %s', node, stats)
+                return stats
+            log.debug('CONNECTION_MANAGER_ALL [%02d]: cannot parse %d bytes',
+                      node, len(all_value))
+
         entry = self._read_cm_attr(driver, node, 9)
         if entry is _RESOURCE_ERROR:
             return None
@@ -266,8 +277,6 @@ class ControlNetPoller(QThread):
             'max_buffer_size': module_stats.parse_udint(max_raw) if max_raw is not None else None,
             'buffer_remaining': module_stats.parse_udint(rem_raw) if rem_raw is not None else None,
         }
-        if all(value is None for value in stats.values()):
-            self._module_stats_unsupported.add(node)
         if node not in self._module_stats_logged:
             self._module_stats_logged.add(node)
             log.info(
@@ -277,12 +286,18 @@ class ControlNetPoller(QThread):
             log.info('CM [%02d] parsed: %s', node, stats)
         return stats
 
+    def _read_cm_all(self, driver, node):
+        return self._read_request(
+            driver, self._request(cip_request.connection_manager_all, node))
+
     def _read_cm_attr(self, driver, node, attribute):
-        self._sleep(MODULE_STATS_PACE)
-        request = dict(cip_request.connection_manager)
+        request = self._request(cip_request.connection_manager, node)
         request['attribute'] = attribute
-        request['route_path'] = self._route_paths[node]
         request['name'] = f'CONNECTION_MANAGER_ATTR_{attribute} [{node:02}]'
+        return self._read_request(driver, request)
+
+    def _read_request(self, driver, request):
+        self._sleep(MODULE_STATS_PACE)
         try:
             response = driver.generic_message(**request)
         except (ResponseError, RequestError) as e:
