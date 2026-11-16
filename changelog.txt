@@ -35,3 +35,6 @@
      Fix Insufficient resource errors under multi-node polling
      Toolbar order and settings descriptions refined
      Consistent Fugue icons
+1.4.1 Connection Manager: read via Get_Attributes_All with individual fallback
+     Fix missing CM data for nodes that only support Get_Attributes_All
+     Retry failed nodes instead of caching them permanently
